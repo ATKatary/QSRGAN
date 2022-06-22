@@ -14,12 +14,10 @@ def segment(weights_path, cfg_path, classes_path, img_path):
     """
     network = Segmentor(weights_path, cfg_path, classes_path)
     network.segment(img_path)
-    network.crop()
-    
     
     if network.fig_img is not None: display(network.fig_img)
-    for img, _, label, confidence in network.roi.items():
-        print(f"Identified {label} with {confidence * 100}% confidence")
+    for img, _, label, confidence in network.roi:
+        print(f"Identified {label} with {float(confidence) * 100}% confidence")
         display(img)
 
     
