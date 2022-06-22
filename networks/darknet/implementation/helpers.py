@@ -8,7 +8,7 @@ def display(img):
     Inputs
         :img: to be displayed
     """
-    plt.figure(figsize=(24, 24))
+    plt.figure()
     plt.imshow(cv2.cvtColor(img, cv2.COLOR_BGR2RGB))
     plt.savefig('detected.jpg')
     plt.show()
