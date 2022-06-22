@@ -11,11 +11,11 @@ cp cfg/yolov3.cfg cfg/yolov3-train.cfg
 touch data/obj.names
 touch data/obj.data
 
-echo -e 'license-plate' > data/obj.names
-echo -e 'car' > data/obj.names
-echo -e 'classes = 2\ntrain = data/train.txt\nvalid = data/test.txt\nnames = data/obj.names\nbackup = /content/implementation/pretrained/weights' > data/obj.data
+echo 'license-plate' > data/obj.names
+echo 'car' > data/obj.names
+echo 'classes = 2\ntrain = data/train.txt\nvalid = data/test.txt\nnames = data/obj.names\nbackup = /content/implementation/pretrained/weights' > data/obj.data
 
-touch data/train
+mkdir data/train
 cp -r ../implementation/data/train/* ./data/train
 
 python3 ../implementation/setup.py --data_dir ./data/ --darknet_path .

@@ -33,6 +33,7 @@ def adjust_train_cfg(darknet_path, classes):
         cfg_content = re.sub("subdivisions=1", "subdivisions=64", cfg_content)
         cfg_content = re.sub("filters=255", f"filters={filters}", cfg_content)
         cfg_content = re.sub("max_batches = 500200", f"max_batches={batches}", cfg_content)
+        print(cfg_content)
         cfg_file.write(cfg_content)
 
 
