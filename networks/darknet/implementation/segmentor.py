@@ -70,8 +70,8 @@ class Segmentor():
                 x, y, w, h = boxes[i]
                 label = str(self.classes[class_ids[i]])
                 confidence = str(round(confidences[i], 2))
-                cv2.rectangle(img, (x,y), (x + w, y + h), self.color, 15)
-                cv2.putText(img, f"{label} {confidence}", (x, y + 20), self.font, 3, (255, 255, 255), 3)
+                cv2.rectangle(img, (x,y), (x + w, y + h), self.color, 1)
+                # cv2.putText(img, f"{label} {confidence}", (x, y + 20), self.font, 1, (255, 255, 255), 1)
 
         self.fig_image = img
         self.coordinates = (x, y, w, h)
