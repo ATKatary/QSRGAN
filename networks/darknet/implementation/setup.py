@@ -32,14 +32,14 @@ def adjust_train_cfg(darknet_path, classes):
         cfg_content = re.sub("classes=80", f"classes={n}", cfg_content)
         cfg_content = re.sub("subdivisions=1", "subdivisions=64", cfg_content)
         cfg_content = re.sub("filters=255", f"filters={filters}", cfg_content)
-        cfg_content = re.sub("max_batches=500200", f"max_batches={batches}", cfg_content)
+        cfg_content = re.sub("max_batches = 500200", f"max_batches={batches}", cfg_content)
         cfg_file.write(cfg_content)
 
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
 
-    parser.add_argument('--classes', type=list, default=[])
+    parser.add_argument('--classes', type=list, default=['license-plate', 'car'])
     parser.add_argument('--data_dir', type=str, default='.')
     parser.add_argument('--darknet_path', type=str, default='/content/darkent')
 
