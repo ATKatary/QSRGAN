@@ -26,7 +26,7 @@ def adjust_train_cfg(darknet_path, classes):
     batches = 2000 * n
     filters = 3 * (n + 5)
 
-    with open(f"{darknet_path}/cfg/yolov3-train.cfg", "wb+") as cfg_file:
+    with open(f"{darknet_path}/cfg/yolov3-train.cfg", "r+") as cfg_file:
         cfg_content = cfg_file.read()
         cfg_content = re.sub("batch=1", "batch=64", cfg_content)
         cfg_content = re.sub("classes=80", f"classes={n}", cfg_content)
