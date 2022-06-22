@@ -1,6 +1,6 @@
 import imp
-from segmentor import Segmentor
-from helpers import *
+from .segmentor import Segmentor
+from .helpers import *
 
 def segment(weights_path, cfg_path, classes_path, img_path):
     """
