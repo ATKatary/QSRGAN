@@ -26,13 +26,14 @@ def adjust_train_cfg(darknet_path, classes):
     batches = 2000 * n
     filters = 3 * (n + 5)
 
-    with open(f"{darknet_path}/cfg/yolov3-train.cfg") as cfg_file:
+    with open(f"{darknet_path}/cfg/yolov3-train.cfg", "wb+") as cfg_file:
         cfg_content = cfg_file.read()
         cfg_content = re.sub("batch=1", "batch=64", cfg_content)
         cfg_content = re.sub("classes=80", f"classes={n}", cfg_content)
         cfg_content = re.sub("subdivisions=1", "subdivisions=64", cfg_content)
         cfg_content = re.sub("filters=255", f"filters={filters}", cfg_content)
         cfg_content = re.sub("max_batches=500200", f"max_batches={batches}", cfg_content)
+        cfg_file.write(cfg_content)
 
 
 if __name__ == '__main__':
