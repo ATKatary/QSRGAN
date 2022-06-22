@@ -17,7 +17,7 @@ def segment(weights_path, cfg_path, classes_path, img_path):
     network.crop()
     
     
-    if network.fig_image is not None: display(network.fig_image)
+    if network.fig_img is not None: display(network.fig_img)
     for img, _, label, confidence in network.roi.items():
         print(f"Identified {label} with {confidence * 100}% confidence")
         display(img)

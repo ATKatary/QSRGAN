@@ -21,7 +21,7 @@ class Segmentor():
         self.font = cv2.FONT_HERSHEY_PLAIN
         self.img = None
         self.roi = []
-        self.fig_images = None
+        self.fig_img = None
         self.color = (246, 251, 9) 
           
     def segment(self, img_path: str):
