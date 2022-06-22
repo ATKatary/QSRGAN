@@ -1,5 +1,6 @@
 import cv2 
 import numpy as np 
+from .helpers import *
 
 class Segmentor():
     """
@@ -20,9 +21,8 @@ class Segmentor():
         
         self.font = cv2.FONT_HERSHEY_PLAIN
         self.img = None
-        self.fig_image = None
-        self.roi_image = None
-        self.coordinates = None
+        self.roi = []
+        self.fig_images = None
         self.color = (246, 251, 9) 
           
     def segment(self, img_path: str):
@@ -72,15 +72,6 @@ class Segmentor():
                 confidence = str(round(confidences[i], 2))
                 cv2.rectangle(img, (x,y), (x + w, y + h), self.color, 3)
                 # cv2.putText(img, f"{label} {confidence}", (x, y + 20), self.font, 1, (255, 255, 255), 1)
-
-        self.fig_image = img
-        self.coordinates = (x, y, w, h)
-    
-    
-    def crop(self):
-        """
-        Crops the image to be only the segmented object
-        """
-        x, y, w, h = self.coordinates
-        roi = self.img[y: y + h, x: x + w]
-        self.roi_image = roi
+                self.roi.append([img[y: y + h, x: x + w], (x, y, w, h), label, confidence])
+                
+        self.fig_img = img
