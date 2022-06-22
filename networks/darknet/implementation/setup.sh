@@ -1,10 +1,11 @@
 git clone https://github.com/AlexeyAB/darknet
 cd darknet
-make
 
 sed -i '/GPU=0/c\GPU=1' ./Makefile
 sed -i '/CUDNN=0/c\CUDNN=1' ./Makefile
 sed -i '/OPENCV=0/c\OPENCV=1' ./Makefile
+
+make 
 
 cp cfg/yolov3.cfg cfg/yolov3-train.cfg
 
