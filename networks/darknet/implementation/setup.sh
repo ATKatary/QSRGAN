@@ -20,5 +20,5 @@ cp -r ../implementation/data/train/* data/train
 
 python3 ../implementation/setup.py --data_dir ./data/ --classes ['license-plate', 'car'] --darknet_path .
 
-!wget https://pjreddie.com/media/files/darknet53.conv.74
+wget https://pjreddie.com/media/files/darknet53.conv.74
  
