@@ -76,7 +76,6 @@ def create_dataset(src_path, home_dir, stream = False, max_iters = None, k = 2):
         for tile in tiles:
             h, w, _ = tile.shape 
             low_res_tile = cv2.resize(tile,  (w // k, h // k))
-            low_res_tile = cv2.resize(low_res_tile,  (w, h))
             
             data.append(np.transpose(tile, (2, 0, 1)).astype(np.float32))
             low_res_data.append(np.transpose(low_res_tile, (2, 0, 1)).astype(np.float32))
