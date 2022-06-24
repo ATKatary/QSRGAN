@@ -23,8 +23,8 @@ class Discriminator(nn.Module):
             nn.Conv2d(ndf, ndf, kernel_size=3, stride=2, padding=1),
             nn.BatchNorm2d(ndf),
             nn.LeakyReLU(0.2, inplace=True)
-        ] + self.block(ndf * 2) + self.block(ndf * 4) + self.block(ndf * 8)
-        layers.append(nn.Conv2d(ndf * 8, 1, kernel_size=3, stride=1, padding=1))
+        ] + self.block(ndf) + self.block(ndf * 2) + self.block(ndf * 4)
+        layers.append(nn.Conv2d(ndf * 4, 1, kernel_size=3, stride=1, padding=1))
         
         self.main = nn.Sequential(*layers)
     
