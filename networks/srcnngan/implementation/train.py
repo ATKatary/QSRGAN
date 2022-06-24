@@ -10,7 +10,7 @@ from .srcnn_utils import *
 import torch.optim as optim
 from .loss_functions import psnr
 from .data_utils import SRCNNDataset
-from torchvision.utils import vutils
+from torchvision.utils import make_grid
 from .discriminator import Discriminator
 
 ### Functions ###
@@ -77,7 +77,7 @@ def _store(path, image):
     :path: <str> path of location to save the image tensor in
     :image: <torch.Tensor> representing the image with dimensions (c, w, h)
     """
-    image = vutils.make_grid(image.detach().cpu(), padding=2, normalize=True).numpy()
+    image = make_grid(image.detach().cpu(), padding=2, normalize=True).numpy()
     image = (image.transpose(1, 2, 0) * 255).astype(np.uint8)
     cv2.imwrite(path, image)
 
