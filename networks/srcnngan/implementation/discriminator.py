@@ -16,15 +16,32 @@ class Discriminator(nn.Module):
         """
         super(Discriminator, self).__init__()
         self.main = nn.Sequential(
-            nn.ConvTranspose2d(c, ndf, kernel_size=5, padding=2, padding_mode='zeros'),
+            nn.Conv2d(c, ndf, kernel_size=3, stride=1, padding=1),
             nn.LeakyReLU(0.2, inplace=True),
+
+            nn.Conv2d(ndf, ndf, kernel_size=3, stride=2, padding=1),
+            nn.BatchNorm2d(ndf),
+            nn.LeakyReLU(0.2, inplace=True)
             
-            nn.ConvTranspose2d(ndf, ndf * 2, kernel_size=1, padding=2, padding_mode='zeros'),
-            nn.LeakyReLU(0.2, inplace=True),
-            
-            nn.ConvTranspose2d(ndf * 2, c, kernel_size=9, padding=2, padding_mode='zeros'),
-            nn.Sigmoid()
+            *self.block(ndf),
+            *self.block(ndf * 2),
+            *self.block(ndf * 4),
+
+            nn.Conv2d(ndf * 4, 1, kernel_size=3, stride=1, padding=1),
         )
+    
+    def block(self, in_c):
+        """
+        """
+        return [
+            nn.Conv2d(in_c, in_c * 2, kernel_size=3, stride=1, padding=1),
+            nn.BatchNorm2d(in_c * 2),
+            nn.LeakyReLU(0.2, inplace=True),
+
+            nn.Conv2d(in_c * 2, in_c * 2, kernel_size=3, stride=2, padding=1),
+            nn.BatchNorm2d(in_c * 2),
+            nn.LeakyReLU(0.2, inplace=True)
+        ]
 
     def forward(self, input):
         """ Forward porpagation of input through the net """
