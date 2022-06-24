@@ -40,7 +40,7 @@ def train_and_validate(device, val_inputs, val_labels, train_inputs, train_label
     disc.apply(random_init)
     disc_optimizer = optim.Adam(disc.parameters(), lr=lr, betas=(beta1, 0.999))
     
-    print(f"Gen\n{gen}\n\nDisc\n{disc}")
+    # print(f"Gen\n{gen}\n\nDisc\n{disc}")
     feature_extractor = FeatureExtractor().to(device)
     feature_extractor.eval()
 
