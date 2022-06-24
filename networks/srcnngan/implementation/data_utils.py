@@ -82,7 +82,7 @@ def create_dataset(src_path, home_dir, stream = False, max_iters = None, k = 2):
             data.append(np.transpose(tile, (2, 0, 1)).astype(np.float32))
             low_res_data.append(np.transpose(low_res_tile, (2, 0, 1)).astype(np.float32))
         
-        save_image(low_res_tiles, f"{home_dir}/inputs/car_lr{i}.png")
+        save_image(np.array(low_res_tiles), f"{home_dir}/inputs/car_lr{i}.png")
     
     hf.create_dataset(name="label", data=np.asarray(data))
     hf.create_dataset(name="data", data=np.asarray(low_res_data))
@@ -175,4 +175,4 @@ def _split(image, k):
     """
     h, w, _ = image.shape
     m, n = h // k, w // k
-    return np.array([image[x : x + m, y : y + n, ::] for x in range(0, h, m) for y in range(0, w, n)])
+    return [image[x : x + m, y : y + n, ::] for x in range(0, h, m) for y in range(0, w, n)]
