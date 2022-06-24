@@ -47,10 +47,7 @@ def train_and_validate(device, val_inputs, val_labels, train_inputs, train_label
     train_loader = train_data.load(batch_size)
 
     val_data = SRCNNDataset(val_inputs, val_labels)
-    val_loader = train_data.load(val_data)
-
-    real_label = 1
-    fake_label = 0
+    val_loader = train_data.load(batch_size)
 
     start = time.time()
     for epoch in range(epochs):
