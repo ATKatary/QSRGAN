@@ -4,7 +4,9 @@ import h5py
 import torch
 import requests
 import numpy as np
+from PIL import Image
 from torchvision.utils import save_image
+import torchvision.transforms as transforms
 from torch.utils.data import DataLoader, Dataset
 
 ### Classes ###
@@ -152,21 +154,6 @@ def read_images(dir_path):
         if image is not None: images[image_name] = image
 
     return images
-
-def _split(image, k):
-    """
-    Splits an image into h // k x w // k smaller images
-
-    Inputs
-        :image: <np.ndarray> to be split
-        :k: <int> the factor to split the image by 
-    
-    Outputs
-        :returns: a list of smaller images that together form the original image
-    """
-    h, w, _ = image.shape
-    m, n = h // k, w // k
-    return np.array([image[x : x + m, y : y + n, ::] for x in range(0, h, m) for y in range(0, w, n)])
 
 ### Helper Functions ###
 def _split(image, k):
