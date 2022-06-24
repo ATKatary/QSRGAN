@@ -40,7 +40,7 @@ def train_and_validate(device, val_inputs, val_labels, train_inputs, train_label
     disc.apply(random_init)
     disc_optimizer = optim.Adam(disc.parameters(), lr=lr, betas=(beta1, 0.999))
     
-    feature_extractor = FeatureExtractor()
+    feature_extractor = FeatureExtractor().to(device)
     feature_extractor.eval()
 
     train_data = SRCNNDataset(train_inputs, train_labels)
