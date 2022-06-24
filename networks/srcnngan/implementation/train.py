@@ -142,7 +142,7 @@ def _train(models, dataloader, n, device, lr, feature_extractor, optimizer = Non
         disc_fake_loss = disc_criterion(super_res.detach(), fake)
         disc_loss = (disc_real_loss + disc_fake_loss) / 2
         disc_loss.backward()
-        disc_loss.step()
+        disc_optimizer.step()
 
         running_gen_loss += gen_loss.item()
         running_disc_loss += disc_loss.item()
