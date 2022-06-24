@@ -16,13 +16,13 @@ class Discriminator(nn.Module):
         """
         super(Discriminator, self).__init__()
         self.main = nn.Sequential(
-            nn.ConvTranspose2d(c, ndf, kernel_size=5, padding=2, padding_mode='replicate'),
+            nn.ConvTranspose2d(c, ndf, kernel_size=5, padding=2, padding_mode='zeros'),
             nn.LeakyReLU(0.2, inplace=True),
             
-            nn.ConvTranspose2d(ndf, ndf * 2, kernel_size=1, padding=2, padding_mode='replicate'),
+            nn.ConvTranspose2d(ndf, ndf * 2, kernel_size=1, padding=2, padding_mode='zeros'),
             nn.LeakyReLU(0.2, inplace=True),
             
-            nn.ConvTranspose2d(ndf * 2, kernel_size=9, padding=2, padding_mode='replicate'),
+            nn.ConvTranspose2d(ndf * 2, 1, kernel_size=9, padding=2, padding_mode='zeros'),
             nn.Sigmoid()
         )
 

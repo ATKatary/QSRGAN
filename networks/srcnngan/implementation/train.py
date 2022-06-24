@@ -50,20 +50,22 @@ def train_and_validate(device, val_inputs, val_labels, train_inputs, train_label
         print(f"Epoch {epoch + 1} of {epochs}")
         criterion = nn.BCELoss()
         
-        for _, data in tqdm(enumerate(train_loader), 0):
+        for _, data in tqdm(enumerate(train_loader), total=len(train_data) / batch_size):
             lr, gt = data
+            lr = lr.to(device)
+            gt = gt.to(device)
 
             disc.zero_grad()
-            label = torch.full((gt.size(0),), real_label, dtype=torch.float, device=device)
 
-            output = disc(gt).view(-1)
+            output = disc(gt)
+            label = torch.full(output.shape, real_label, dtype=torch.float, device=device)
             disc_real_loss = criterion(output, label)
 
             disc_real_loss.backward()
 
             sr = gen(lr)
             label.fill_(fake_label)
-            output = disc(sr.detach()).view(-1)
+            output = disc(sr.detach())
             disc_fake_loss = criterion(output, label)
             disc_fake_loss.backward()
             disc_loss = disc_real_loss + disc_fake_loss
@@ -71,12 +73,12 @@ def train_and_validate(device, val_inputs, val_labels, train_inputs, train_label
 
             gen.zero_grad()
             label.fill_(real_label)
-            output = disc(sr).view(-1)
+            output = disc(sr)
             gen_loss = criterion(output, gt)
             gen_loss.backward()
             gen_optimizer.step()
 
-        print(f"D Loss: {disc_loss:.3f}\nG Loss: {gen_loss:.3f}")
+        print(f"D Loss: {disc_loss:.3f}\tG Loss: {gen_loss:.3f}")
 
     end = time.time()
     print(f"Finished training in: {((end - start) / 60):.3f} minutes\nSaving model ...")

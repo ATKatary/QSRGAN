@@ -55,7 +55,7 @@ def create_dataset(src_path, home_dir, stream = False, max_iters = None, k = 2):
     Outpts
         :returns: path to the h5 file containing the generated dataset
     """
-    hf_path = f"{home_dir}/inputs/train.h5"
+    hf_path = f"{home_dir}/data/train.h5"
     try: os.remove(hf_path)
     except Exception: pass
 
@@ -66,20 +66,20 @@ def create_dataset(src_path, home_dir, stream = False, max_iters = None, k = 2):
     if stream: images = extract_frames(src_path, max_iters=max_iters)
     else: images = read_images(src_path)
 
-    for image in images:
-        image = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
-        h, w, _ = image.shape 
+    for i in range(len(images)):
+        image = images[i]
+        h, w, c = image.shape 
         # splitting frame into 100 tiles of size m x n
-        m, n = h // 10, w // 10
+        m, n = h // 26, w // 26
         tiles = [image[x : x + m, y : y + n] for x in range(0, h, m) for y in range(0, w, n)]
         
         for tile in tiles:
             h, w, _ = tile.shape 
-            low_res_tile = cv2.resize(tile,  (w // k, h // k))
+            low_res_tile = cv2.resize(tile, (w // k, h // k, c))
             
             data.append(np.transpose(tile, (2, 0, 1)).astype(np.float32))
             low_res_data.append(np.transpose(low_res_tile, (2, 0, 1)).astype(np.float32))
-            
+    
     hf.create_dataset(name="label", data=np.asarray(data))
     hf.create_dataset(name="data", data=np.asarray(low_res_data))
     hf.close()
