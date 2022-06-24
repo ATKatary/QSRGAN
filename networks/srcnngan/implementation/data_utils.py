@@ -144,12 +144,12 @@ def read_images(dir_path):
         :dir_path: <str> the path to the image directory
     
     Outputs
-        :returns: a list of the images (represented as ndarrays)
+        :returns: a map of the image_name -> image (represented as ndarrays)
     """
-    images = []
+    images = {}
     for image_name in os.listdir(dir_path):
         image = cv2.imread(os.path.join(dir_path, image_name))
-        if image is not None: images.append(image)
+        if image is not None: images[image_name] = image
 
     return images
 
