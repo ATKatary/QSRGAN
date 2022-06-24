@@ -129,7 +129,7 @@ def _train(models, dataloader, n, device, lr, feature_extractor, optimizer = Non
         gen_features = feature_extractor(super_res)
         real_features = feature_extractor(label)
         content_loss = content_criterion(gen_features, real_features.detach())
-
+        
         gen_loss = content_loss + (10 ** -3) * disc_loss
         gen_loss.backward()
         gen_optimizer.step()
