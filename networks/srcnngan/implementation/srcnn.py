@@ -51,7 +51,7 @@ class SRCNN(nn.Module):
     def forward(self, input, mode = 'bilinear'):
         """ Forward porpagation of input through the net with given upscaling mode (default bilinear) """
         conv1_output = self.conv1(input)
-        output = self.residuals(output)
+        output = self.residuals(conv1_output)
 
         conv2_output = self.conv1(output)
         output = torch.add(conv1_output, conv2_output)
