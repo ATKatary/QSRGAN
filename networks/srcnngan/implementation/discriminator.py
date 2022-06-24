@@ -15,20 +15,18 @@ class Discriminator(nn.Module):
             - Safe
         """
         super(Discriminator, self).__init__()
-        self.main = nn.Sequential(
+        
+        layers = [
             nn.Conv2d(c, ndf, kernel_size=3, stride=1, padding=1),
             nn.LeakyReLU(0.2, inplace=True),
 
             nn.Conv2d(ndf, ndf, kernel_size=3, stride=2, padding=1),
             nn.BatchNorm2d(ndf),
             nn.LeakyReLU(0.2, inplace=True)
-            
-            *self.block(ndf),
-            *self.block(ndf * 2),
-            *self.block(ndf * 4),
-
-            nn.Conv2d(ndf * 4, 1, kernel_size=3, stride=1, padding=1),
-        )
+        ] + self.block(ndf) + self.block(ndf * 2) + self.block(ndf * 4)
+        layers.append(nn.Conv2d(ndf * 4, 1, kernel_size=3, stride=1, padding=1))
+        
+        self.main = nn.Sequential(*layers)
     
     def block(self, in_c):
         """
