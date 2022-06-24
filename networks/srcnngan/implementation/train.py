@@ -190,6 +190,7 @@ def _validate(model, dataloader, epoch, n, device, home_dir, feature_extractor, 
         if epoch % 100 == 0:
             _store(f"{home_dir}/outputs/training/labels/train{epoch}.png", label)
             _store(f"{home_dir}/outputs/training/super_res/train{epoch}.png", output)
+            _store(f"{home_dir}/outputs/training/low_res/train{epoch}.png", image_data)
 
     final_loss = running_loss / len(dataloader.dataset)
     final_psnr = running_psnr / int(n / batch_size)
