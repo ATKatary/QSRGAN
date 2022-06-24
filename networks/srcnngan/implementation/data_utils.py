@@ -4,6 +4,7 @@ import h5py
 import torch
 import requests
 import numpy as np
+from torchvision.utils import save_image
 from torch.utils.data import DataLoader, Dataset
 
 ### Classes ###
@@ -69,16 +70,19 @@ def create_dataset(src_path, home_dir, stream = False, max_iters = None, k = 2):
     for i in range(len(images)):
         image = images[i]
         h, w, _ = image.shape 
+        low_res_image = cv2.resize(image, (w // k, h // k))
+
         # splitting frame into 100 tiles of size m x n
-        m, n = h // 26, w // 26
-        tiles = [image[x : x + m, y : y + n, ::] for x in range(0, h, m) for y in range(0, w, n)]
-        
-        for tile in tiles:
-            h, w, c = tile.shape 
-            low_res_tile = cv2.resize(tile, (w // k, h // k, c))
+        tiles = _split(image, 26)
+        low_res_tiles = _split(low_res_image, 26 // k)
+
+        for i in range(len(tiles)):
+            tile, low_res_tile = tiles[i], low_res_tiles[i]
             
             data.append(np.transpose(tile, (2, 0, 1)).astype(np.float32))
             low_res_data.append(np.transpose(low_res_tile, (2, 0, 1)).astype(np.float32))
+        
+        save_image(low_res_tiles, f"{home_dir}/inputs/car_lr{i}.png")
     
     hf.create_dataset(name="label", data=np.asarray(data))
     hf.create_dataset(name="data", data=np.asarray(low_res_data))
@@ -157,3 +161,18 @@ def read_images(dir_path):
         if image is not None: images.append(image)
 
     return images
+
+def _split(image, k):
+    """
+    Splits an image into h // k x w // k smaller images
+
+    Inputs
+        :image: <np.ndarray> to be split
+        :k: <int> the factor to split the image by 
+    
+    Outputs
+        :returns: a list of smaller images that together form the original image
+    """
+    h, w, _ = image.shape
+    m, n = h // k, w // k
+    return np.array([image[x : x + m, y : y + n, ::] for x in range(0, h, m) for y in range(0, w, n)])
