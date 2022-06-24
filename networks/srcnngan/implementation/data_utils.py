@@ -68,13 +68,13 @@ def create_dataset(src_path, home_dir, stream = False, max_iters = None, k = 2):
 
     for i in range(len(images)):
         image = images[i]
-        h, w, c = image.shape 
+        h, w, _ = image.shape 
         # splitting frame into 100 tiles of size m x n
         m, n = h // 26, w // 26
-        tiles = [image[x : x + m, y : y + n] for x in range(0, h, m) for y in range(0, w, n)]
+        tiles = [image[x : x + m, y : y + n, ::] for x in range(0, h, m) for y in range(0, w, n)]
         
         for tile in tiles:
-            h, w, _ = tile.shape 
+            h, w, c = tile.shape 
             low_res_tile = cv2.resize(tile, (w // k, h // k, c))
             
             data.append(np.transpose(tile, (2, 0, 1)).astype(np.float32))
