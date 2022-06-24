@@ -3,6 +3,26 @@ import cv2
 import torch
 import shutil
 import numpy as np
+import torch.nn as nn
+from torchvision.models import vgg19
+
+class FeatureExtractor(nn.Module):
+    """
+    AF(n, ndf) = a vgg19 feature extractor for loss computation
+
+    Representation Invaraint:
+        - True
+
+    Represnetation Exposure:
+        - Safe
+    """
+    def __init__(self):
+        super(FeatureExtractor, self).__init__()
+        vgg19_model = vgg19(pretrained=True)
+        self.feature_extractor = nn.Sequential(*list(vgg19_model.features.children())[:18])
+
+    def forward(self, img):
+        return self.feature_extractor(img)
 
 def zero_upsampling(img: torch.Tensor, factors: int) -> torch.Tensor:
     """
@@ -93,7 +113,3 @@ def random_init(m):
     elif classname.find('BatchNorm') != -1:
         torch.nn.init.normal_(m.weight.data, 1.0, 0.02)
         torch.nn.init.constant_(m.bias.data, 0)
-    
-
-    
-

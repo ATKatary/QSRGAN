@@ -6,7 +6,7 @@ from implementation.srcnn_utils import zero_upsampling
 class Discriminator(nn.Module):
     def __init__(self, c = 3, ndf = 64):
         """
-        AF(n, ndf) = a 4 layer 
+        AF(n, ndf) = a 3 layer discriminator for a super resolution network
 
         Representation Invaraint:
             - True
@@ -22,7 +22,7 @@ class Discriminator(nn.Module):
             nn.ConvTranspose2d(ndf, ndf * 2, kernel_size=1, padding=2, padding_mode='zeros'),
             nn.LeakyReLU(0.2, inplace=True),
             
-            nn.ConvTranspose2d(ndf * 2, 1, kernel_size=9, padding=2, padding_mode='zeros'),
+            nn.ConvTranspose2d(ndf * 2, c, kernel_size=9, padding=2, padding_mode='zeros'),
             nn.Sigmoid()
         )
 

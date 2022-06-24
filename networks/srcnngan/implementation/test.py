@@ -27,7 +27,9 @@ def test_image(model, device, home_dir, image_path = None):
 
     image = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
     image = image.reshape(image.shape[0], image.shape[1], 3)
-    before_image_path = f"{home_dir}/inputs/images/before_{image_name}.png"
+    
+    if image_path: before_image_path = image_path
+    else: before_image_path = f"{home_dir}/inputs/images/before_{image_name}.png" 
 
     cv2.imwrite(before_image_path, image)
     image = image / 255.0
