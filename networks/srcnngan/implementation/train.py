@@ -46,6 +46,9 @@ def train_and_validate(device, val_inputs, val_labels, train_inputs, train_label
     train_data = SRCNNDataset(train_inputs, train_labels)
     train_loader = train_data.load(batch_size)
 
+    val_data = SRCNNDataset(val_inputs, val_labels)
+    val_loader = train_data.load(val_data)
+
     real_label = 1
     fake_label = 0
 
@@ -57,7 +60,7 @@ def train_and_validate(device, val_inputs, val_labels, train_inputs, train_label
           
         print(f"Training: Disc Loss: {disc_loss:.3f}\tGen Loss: {gen_loss:.3f}\tPSNR: {psnr:.3f}")
 
-        gen_loss, psnr = _validate(gen, train_loader, len(train_data), device, lr, home_dir, feature_extractor)
+        gen_loss, psnr = _validate(gen, val_loader, epoch, len(val_data), device, home_dir, feature_extractor)
         print(f"Validation: Disc Loss: {disc_loss:.3f}\tGen Loss: {gen_loss:.3f}\tPSNR: {psnr:.3f}")
         
     end = time.time()
