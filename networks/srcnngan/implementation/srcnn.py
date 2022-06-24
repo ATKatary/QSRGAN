@@ -53,7 +53,7 @@ class SRCNN(nn.Module):
         conv1_output = self.conv1(input)
         output = self.residuals(conv1_output)
 
-        conv2_output = self.conv1(output)
+        conv2_output = self.conv2(output)
         output = torch.add(conv1_output, conv2_output)
 
         output = self.upsample(output)
