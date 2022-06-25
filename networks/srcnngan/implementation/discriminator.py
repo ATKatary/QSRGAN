@@ -4,7 +4,7 @@ from implementation.srcnn_utils import zero_upsampling
 
 ### Classes ###
 class Discriminator(nn.Module):
-    def __init__(self, c = 3, ndf = 64):
+    def __init__(self, input_shape = (3, 256, 256), c = 3, ndf = 64):
         """
         AF(n, ndf) = a 3 layer discriminator for a super resolution network
 
@@ -15,7 +15,11 @@ class Discriminator(nn.Module):
             - Safe
         """
         super(Discriminator, self).__init__()
-        
+        super(Discriminator, self).__init__()
+        self.input_shape = input_shape
+        _, h, w = self.input_shape
+        self.output_shape = (1, h // 2 ** 4, w // 2 ** 4)
+
         layers = [
             nn.Conv2d(c, ndf, kernel_size=3, stride=1, padding=1),
             nn.LeakyReLU(0.2, inplace=True),

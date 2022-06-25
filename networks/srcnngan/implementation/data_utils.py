@@ -71,11 +71,16 @@ def create_dataset(src_path, home_dir, stream = False, max_iters = None, k = 2):
 
     for image_name, image in images.items():
         h, w, _ = image.shape 
-        low_res_image = cv2.resize(image, (w // k, h // k))
+        # low_res_image = cv2.resize(image, (w // k, h // k))
+        low_res_image = cv2.resize(image, (256 // k, 256 // k))
+        high_res_image = cv2.resize(image, (256, 256))
        
         # splitting frame into 100 tiles of size m x n
-        data += _split(image, 26)
-        low_res_data += _split(low_res_image, 26)
+        # n = 26
+        # data += _split(image, n)
+        # low_res_data += _split(low_res_image, n)
+        data.append(np.transpose(high_res_image, (2, 0, 1)).astype(np.float32))
+        low_res_data.append(np.transpose(low_res_image, (2, 0, 1)).astype(np.float32))
     
     hf.create_dataset(name="label", data=np.asarray(data))
     hf.create_dataset(name="data", data=np.asarray(low_res_data))

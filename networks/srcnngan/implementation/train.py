@@ -122,9 +122,9 @@ def _train(models, dataloader, n, device, lr, feature_extractor, optimizer = Non
         super_res = gen(low_res)
         disc_output = disc(super_res)
 
-        real = torch.full((low_res.size(0), *disc_output.shape), real_label, dtype=torch.float, device=device)
-        fake = torch.full((low_res.size(0), *disc_output.shape), fake_label, dtype=torch.float, device=device)
-
+        real = torch.full((low_res.size(0), *disc.output_shape), real_label, dtype=torch.float, device=device)
+        fake = torch.full((label.size()), fake_label, dtype=torch.float, device=device)
+        
         disc_loss = disc_criterion(disc_output, real)
         gen_features = feature_extractor(super_res)
         real_features = feature_extractor(label)
