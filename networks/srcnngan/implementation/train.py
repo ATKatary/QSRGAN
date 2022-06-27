@@ -1,3 +1,4 @@
+from multiprocessing.sharedctypes import Value
 from pickletools import optimize
 from pyexpat import model
 import time
@@ -6,33 +7,37 @@ import numpy as np
 import torch.nn as nn
 from tqdm import tqdm
 from .srcnn import SRCNN
-from .srcnn_utils import *
+from .srgan import SRGAN
+from .srcnngan_utils import *
 import torch.optim as optim
 from .loss_functions import psnr
-from .data_utils import SRCNNDataset
+from .data_utils import Dataset
 from torchvision.utils import make_grid
 from .discriminator import Discriminator
 
 ### Functions ###
-def train_and_validate(device, val_inputs, val_labels, train_inputs, train_labels, batch_size, epochs, lr, home_dir, beta1 = 0.5):
+def train_and_validate(device, val_inputs, val_labels, train_inputs, train_labels, batch_size, epochs, lr, home_dir, beta1 = 0.5, gen_type = "SRGAN"):
     """
     Tests out the network against an inout image
 
     Inputs
         :device: the computation device CPU or GPU
-        :val_inputs: <SRCNNDataset> the inputs for validation
-        :val_labels: <SRCNNDataset> the labels for validation
-        :train_inputs: <SRCNNDataset> the inputs for training
-        :train_labels: <SRCNNDataset> the labels for training
+        :val_inputs: <Dataset> the inputs for validation
+        :val_labels: <Dataset> the labels for validation
+        :train_inputs: <Dataset> the inputs for training
+        :train_labels: <Dataset> the labels for training
         :batch_size: <int> size of batches to load data in
         :epochs: <int> number of times to train the network
         :lr: <float> rate at which we update the network weights
         :home_dir: <str> the home directory containing subdirectories to read from and write to
     
     Outputs
-        :returns: the traind SRCNN model
+        :returns: the traind SRCNN or SRGAN model
     """
-    gen = SRCNN().to(device)
+    if gen_type == "SRGAN": gen = SRGAN().to(device)
+    elif gen_type == "SRCNN": gen = SRCNN().to(device)
+    else: raise ValueError(f"{gen_type} is not a valid generation model type. Pick one of [SRGAN, SRCNN]")
+
     gen.apply(random_init)
     gen_optimizer = optim.Adam(gen.parameters(), lr=lr, betas=(beta1, 0.999))
 
@@ -44,17 +49,17 @@ def train_and_validate(device, val_inputs, val_labels, train_inputs, train_label
     feature_extractor = FeatureExtractor().to(device)
     feature_extractor.eval()
 
-    train_data = SRCNNDataset(train_inputs, train_labels)
+    train_data = Dataset(train_inputs, train_labels)
     train_loader = train_data.load(batch_size)
 
-    val_data = SRCNNDataset(val_inputs, val_labels)
+    val_data = Dataset(val_inputs, val_labels)
     val_loader = train_data.load(batch_size)
 
     start = time.time()
     for epoch in range(epochs):
         print(f"Epoch {epoch + 1} of {epochs}")
         
-        gen_loss, disc_loss, psnr = _train((gen, disc), train_loader, len(train_data), device, lr, feature_extractor)
+        gen_loss, disc_loss, psnr = _train((gen, disc), train_loader, len(train_data), device, lr, feature_extractor, (gen_optimizer, disc_optimizer))
         print(f"Training: Gen Loss: {gen_loss:.3f}\tPSNR: {psnr:.3f}\tDisc Loss: {disc_loss:.3f}")
 
         gen_loss, psnr = _validate(gen, val_loader, epoch, len(val_data), device, home_dir, feature_extractor)
@@ -83,10 +88,10 @@ def _store(path, image):
 
 def _train(models, dataloader, n, device, lr, feature_extractor, optimizer = None, criterion = (nn.MSELoss(), nn.L1Loss())):
     """
-    Trains the SRCNN
+    Trains the SRCNN or SRGAN
 
     Inputs
-        :model: <SRCNN> to train 
+        :model: <SRCNN> | <SRGAN> to train 
         :dataloader: <DataLoader> loading the training data 
         :n: <int> length of the training data
         :lr: <float> learning rate
@@ -158,7 +163,7 @@ def _validate(model, dataloader, epoch, n, device, home_dir, feature_extractor, 
     Tests out the network against an inout image
 
     Inputs
-        :model: <SRCNN> to train
+        :model: <SRCNN> | <SRGAN> to train
         :dataloader: <DataLoader> loading the training data  
         :epoch: <int> epoch this network is currently being trained for
         :n: <int> length of the training data

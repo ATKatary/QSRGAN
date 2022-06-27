@@ -10,7 +10,7 @@ import torchvision.transforms as transforms
 from torch.utils.data import DataLoader, Dataset
 
 ### Classes ###
-class SRCNNDataset(Dataset):
+class Dataset(Dataset):
     """
     AF(image_data, labels) = a datset and corresponding labels for supervised network training
 

@@ -2,7 +2,7 @@ import cv2
 import torch
 import numpy as np
 from .data_utils import download
-from .srcnn_utils import create_video
+from .srcnngan_utils import create_video
 from torchvision.utils import save_image
 
 def test_image(model, device, home_dir, image_path = None):
@@ -10,7 +10,7 @@ def test_image(model, device, home_dir, image_path = None):
     Tests out the network against an input image
 
     Inputs
-        :model: <SRCNN> to test 
+        :model: <SRCNN> | <SRGAN> to test 
         :device: the computation device CPU or GPU
         :home_dir: <str> the home directory containing subdirectories to read from and write to
         :image_path: <str> path to the image to test the network on, None by default
@@ -54,7 +54,7 @@ def test_video(model, device, home_dir, video_path = None, max_iters = None):
     Tests out the network against an input video
 
     Inputs
-        :model: <SRCNN> to test 
+        :model: <SRCNN> | <SRGAN> to test 
         :device: the computation device CPU or GPU
         :home_dir: <str> the home directory containing subdirectories to read from and write to
         :video_path: <str> path to the video to test the network on, None by default
