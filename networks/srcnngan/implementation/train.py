@@ -107,7 +107,10 @@ def _train(models, dataloader, n, device, lr, feature_extractor, optimizer = Non
         gen_optimizer = optim.Adam(gen.parameters(), lr = lr)
         disc_optimizer = optim.Adam(disc.parameters(), lr = lr)
     else: gen_optimizer, disc_optimizer = optimizer
+
     disc_criterion, content_criterion = criterion
+    disc_criterion.to(device)
+    content_criterion.to(device)
 
     gen.train()
     disc.train()
@@ -177,6 +180,7 @@ def _validate(model, dataloader, epoch, n, device, home_dir, feature_extractor, 
     model.eval()
     running_loss = 0.0
     running_psnr = 0.0
+    criterion.to(device)
     batch_size = dataloader.batch_size
 
     with torch.no_grad():
