@@ -1,6 +1,6 @@
 import torch
 import torch.nn as nn
-from implementation.srcnn_utils import zero_upsampling
+from implementation.srcnngan_utils import zero_upsampling
 
 ### Classes ###
 class Discriminator(nn.Module):
