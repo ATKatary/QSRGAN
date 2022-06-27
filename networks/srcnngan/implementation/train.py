@@ -58,7 +58,13 @@ def train_and_validate(device, val_inputs, val_labels, train_inputs, train_label
     start = time.time()
     for epoch in range(epochs):
         print(f"Epoch {epoch + 1} of {epochs}")
+
+        train_epoch_loss, train_epoch_psnr = _train_gen(gen, train_loader, len(train_data), device, lr)
+        print(f"Training: Gen Loss: {train_epoch_loss:.3f}\tPSNR: {train_epoch_psnr:.3f}")
         
+        gen_loss, psnr = _validate(gen, val_loader, epoch, len(val_data), device, home_dir, feature_extractor)
+        print(f"Validation: Gen Loss: {gen_loss:.3f}\tPSNR: {psnr:.3f}")
+       
         gen_loss, disc_loss, psnr = _train((gen, disc), train_loader, len(train_data), device, lr, feature_extractor, (gen_optimizer, disc_optimizer))
         print(f"Training: Gen Loss: {gen_loss:.3f}\tPSNR: {psnr:.3f}\tDisc Loss: {disc_loss:.3f}")
 
@@ -86,6 +92,47 @@ def _store(path, image):
     image = (image.transpose(1, 2, 0) * 255).astype(np.uint8)
     cv2.imwrite(path, image)
 
+def _train_gen(model, dataloader, n, device, lr, optimizer = None, criterion = nn.MSELoss()):
+    """
+    Trains the SRCNN
+
+    Inputs
+        :model: <SRCNN> to train 
+        :dataloader: <DataLoader> loading the training data 
+        :n: <int> length of the training data
+        :lr: <float> learning rate
+        :optimizer: the optimization function for backward propogation, by defualt it is Adam
+        :criterion: the loss function, by default MSE
+    
+    Outputs
+        :returns: the final loss and psnr loss of the model
+    """
+    if optimizer is None:
+        optimizer = optim.Adam(model.parameters(), lr = lr)
+
+    model.train()
+    running_loss = 0.0
+    running_psnr = 0.0
+    batch_size = dataloader.batch_size
+
+    for _, data in tqdm(enumerate(dataloader), total = int(n / batch_size)):
+        image_data = data[0].to(device)
+        label = data[1].to(device)
+        optimizer.zero_grad()
+
+        outputs = model(image_data)
+        loss = criterion(outputs, label)
+        loss.backward()
+
+        optimizer.step()
+
+        running_loss += loss.item()
+        running_psnr += psnr(label, outputs)
+
+    final_loss = running_loss / len(dataloader.dataset)
+    final_psnr = running_psnr / int(n / batch_size)
+    return final_loss, final_psnr
+
 def _train(models, dataloader, n, device, lr, feature_extractor, optimizer = None, criterion = (nn.MSELoss(), nn.L1Loss())):
     """
     Trains the SRCNN or SRGAN
@@ -108,8 +155,8 @@ def _train(models, dataloader, n, device, lr, feature_extractor, optimizer = Non
         disc_optimizer = optim.Adam(disc.parameters(), lr = lr)
     else: gen_optimizer, disc_optimizer = optimizer
 
-    disc_criterion, content_criterion = criterion
-    disc_criterion.to(device)
+    gan_criterion, content_criterion = criterion
+    gan_criterion.to(device)
     content_criterion.to(device)
 
     gen.train()
@@ -133,12 +180,12 @@ def _train(models, dataloader, n, device, lr, feature_extractor, optimizer = Non
         real = torch.full((low_res.size(0), *disc.output_shape), real_label, dtype=torch.float, device=device)
         fake = torch.full((label.size()), fake_label, dtype=torch.float, device=device)
         
-        disc_loss = disc_criterion(disc_output, real)
+        gan_loss = gan_criterion(disc_output, real)
         gen_features = feature_extractor(super_res)
         real_features = feature_extractor(label)
         content_loss = content_criterion(gen_features, real_features.detach())
         
-        gen_loss = content_loss + (10 ** -3) * disc_loss
+        gen_loss = content_loss + (10 ** -3) * gan_loss
         gen_loss.backward()
         gen_optimizer.step()
 
@@ -146,8 +193,8 @@ def _train(models, dataloader, n, device, lr, feature_extractor, optimizer = Non
         disc_optimizer.zero_grad()
 
         disc_output = disc(label)
-        disc_real_loss = disc_criterion(disc_output, real)
-        disc_fake_loss = disc_criterion(super_res.detach(), fake)
+        disc_real_loss = gan_criterion(disc_output, real)
+        disc_fake_loss = gan_criterion(super_res.detach(), fake)
         disc_loss = (disc_real_loss + disc_fake_loss) / 2
         disc_loss.backward()
         disc_optimizer.step()
@@ -196,7 +243,7 @@ def _validate(model, dataloader, epoch, n, device, home_dir, feature_extractor, 
 
         output = output.cpu()
         
-        if epoch % 100 == 0:
+        if epoch % 10 == 0:
             _store(f"{home_dir}/outputs/training/labels/train{epoch}.png", label)
             _store(f"{home_dir}/outputs/training/super_res/train{epoch}.png", output)
             _store(f"{home_dir}/outputs/training/low_res/train{epoch}.png", image_data)
