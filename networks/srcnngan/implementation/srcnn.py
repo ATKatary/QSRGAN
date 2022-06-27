@@ -12,7 +12,7 @@ class SRCNN(nn.Module):
     Representation Exposure:
         - safe
     """
-    def __init__(self, k = 2, c = 3, ndf = 64) -> None:
+    def __init__(self, k = 4, c = 3, ndf = 64) -> None:
         ### Representation ###
         super(SRCNN, self).__init__()
         self.upscale_factor = (k, k)
