@@ -202,7 +202,7 @@ def _validate(model, dataloader, epoch, n, device, home_dir, feature_extractor, 
 
         output = output.cpu()
         
-        if epoch % 10 == 0:
+        if epoch % 1 == 0:
             _store(f"{home_dir}/outputs/training/labels/train{epoch}.png", label)
             _store(f"{home_dir}/outputs/training/super_res/train{epoch}.png", output)
             _store(f"{home_dir}/outputs/training/low_res/train{epoch}.png", image_data)
