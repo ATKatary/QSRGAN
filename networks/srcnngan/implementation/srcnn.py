@@ -12,21 +12,16 @@ class SRCNN(nn.Module):
     Representation Exposure:
         - safe
     """
-    def __init__(self, k = 4, c = 3, ndf = 64) -> None:
+    def __init__(self, k = 2, c = 3, ndf = 64) -> None:
         ### Representation ###
         super(SRCNN, self).__init__()
         self.upscale_factor = (k, k)
 
         self.net = nn.Sequential(
-            nn.Conv2d(c, ndf, kernel_size=9, stride=1, padding=4),
+            nn.Conv2d(c, 64, kernel_size=9, padding=2, padding_mode='replicate'),
             nn.ReLU(),
-
-            nn.Conv2d(ndf, ndf, kernel_size=3, stride=1, padding=1),
-            nn.BatchNorm2d(ndf, 0.8),
-            nn.ReLU(),
-
-            nn.Conv2d(ndf, c, kernel_size=9, stride=1, padding=4),
-            nn.Tanh()
+            nn.Conv2d(64, 32, kernel_size=1, padding=2, padding_mode='replicate'),
+            nn.Conv2d(32, c, kernel_size=5, padding=2, padding_mode='replicate')
         )
 
     def forward(self, input, mode = 'bilinear'):

@@ -4,7 +4,7 @@ from implementation.srcnngan_utils import zero_upsampling
 
 ### Classes ###
 class Discriminator(nn.Module):
-    def __init__(self, input_shape = (3, 256, 256), c = 3, ndf = 64):
+    def __init__(self, input_shape = (3, 40, 40), c = 3, ndf = 64):
         """
         AF(n, ndf) = a 3 layer discriminator for a super resolution network
 
