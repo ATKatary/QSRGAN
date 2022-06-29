@@ -30,12 +30,9 @@ class SRGAN(nn.Module):
             nn.ReLU(True),
         )
 
-        self.upsample = nn.Sequential(*(self.upsample_bloc(k)*2))
+        self.upsample = nn.Sequential(*self.upsample_bloc(k))
 
-        self.conv3 = nn.Sequential(
-            nn.Conv2d(ndf, c, kernel_size=9, stride=1, padding=4),
-            nn.Tanh()
-        )
+        self.conv3 = nn.Sequential(nn.Conv2d(ndf, c, kernel_size=9, stride=1, padding=4))
 
     def upsample_bloc(self, k):
         """

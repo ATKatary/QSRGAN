@@ -10,6 +10,7 @@ import torch.optim as optim
 from .srcnngan_utils import *
 from .data_utils import Dataset
 from .loss_functions import psnr
+from torch.autograd import Variable
 from torchvision.utils import make_grid
 from .discriminator import Discriminator
 
@@ -59,7 +60,7 @@ def train_and_validate(device, val_inputs, val_labels, train_inputs, train_label
        
         gen_loss, disc_loss, psnr = _train((gen, disc), train_loader, len(train_data), device, lr, feature_extractor, (gen_optimizer, disc_optimizer))
         gen_loss, psnr = _validate(gen, val_loader, epoch, len(val_data), device, home_dir, feature_extractor)
-        
+
         print(f"Training: Gen Loss: {gen_loss:.3f}\tPSNR: {psnr:.3f}\tDisc Loss: {disc_loss:.3f}")
         print(f"Validation: Gen Loss: {gen_loss:.3f}\tPSNR: {psnr:.3f}")
         
@@ -120,16 +121,22 @@ def _train(models, dataloader, n, device, lr, feature_extractor, optimizer = Non
     running_disc_loss = 0.0
     batch_size = dataloader.batch_size
     for _, data in tqdm(enumerate(dataloader), total = int(n / batch_size)):
-        low_res = data[0].to(device)
-        label = data[1].to(device)
+        # low_res = data[0].to(device)
+        # label = data[1].to(device)
+        low_res = Variable(data[0]).to(device)
+        label = Variable(data[1]).to(device)
+
         # Training the generator
         gen_optimizer.zero_grad()
 
         super_res = gen(low_res)
         disc_output = disc(super_res)
 
-        real = torch.full((low_res.size(0), *disc.output_shape), real_label, dtype=torch.float, device=device)
-        fake = torch.full((label.size()), fake_label, dtype=torch.float, device=device)
+        # real = torch.full((low_res.size(0), *disc.output_shape), real_label, dtype=torch.float, device=device)
+        # fake = torch.full((label.size()), fake_label, dtype=torch.float, device=device)
+        real = Variable(torch.Tensor(np.ones((disc_output.shape))), requires_grad=False).to(device)
+        fake = Variable(torch.Tensor(np.zeros((disc_output.shape))), requires_grad=False).to(device)
+
         
         gan_loss = gan_criterion(disc_output, real)
         gen_features = feature_extractor(super_res)
@@ -143,9 +150,10 @@ def _train(models, dataloader, n, device, lr, feature_extractor, optimizer = Non
         # Training the discriminator
         disc_optimizer.zero_grad()
 
-        disc_output = disc(label)
-        disc_real_loss = gan_criterion(disc_output, real)
-        disc_fake_loss = gan_criterion(super_res.detach(), fake)
+        disc_real_output = disc(label)
+        disc_real_loss = gan_criterion(disc_real_output, real)
+        disc_fake_output = disc(super_res.detach())
+        disc_fake_loss = gan_criterion(disc_fake_output, fake)
         disc_loss = (disc_real_loss + disc_fake_loss) / 2
         disc_loss.backward()
         disc_optimizer.step()
@@ -154,9 +162,9 @@ def _train(models, dataloader, n, device, lr, feature_extractor, optimizer = Non
         running_disc_loss += disc_loss.item()
         running_psnr += psnr(label, super_res)
 
-    final_gen_loss = running_gen_loss / len(dataloader.dataset)
-    final_disc_loss = running_disc_loss / len(dataloader.dataset)
-    final_psnr = running_psnr / int(n / batch_size)
+    final_gen_loss = running_gen_loss / len(dataloader)
+    final_disc_loss = running_disc_loss / len(dataloader)
+    final_psnr = running_psnr / len(dataloader)
     return final_gen_loss, final_disc_loss, final_psnr
 
 def _validate(model, dataloader, epoch, n, device, home_dir, feature_extractor, criterion = nn.MSELoss()):
@@ -200,5 +208,5 @@ def _validate(model, dataloader, epoch, n, device, home_dir, feature_extractor, 
             _store(f"{home_dir}/outputs/training/low_res/train{epoch}.png", image_data)
 
     final_loss = running_loss / len(dataloader.dataset)
-    final_psnr = running_psnr / int(n / batch_size)
+    final_psnr = running_psnr / len(dataloader)
     return final_loss, final_psnr
