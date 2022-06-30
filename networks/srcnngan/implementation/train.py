@@ -33,6 +33,7 @@ def train_and_validate(device, val_inputs, val_labels, train_inputs, train_label
     Outputs
         :returns: the traind SRCNN or SRGAN model
     """
+    model_name = input("Model name:")
     if gen_type == "SRGAN": gen = SRGAN().to(device)
     elif gen_type == "SRCNN": gen = SRCNN().to(device)
     else: raise ValueError(f"{gen_type} is not a valid generation model type. Pick one of [SRGAN, SRCNN]")
@@ -64,11 +65,15 @@ def train_and_validate(device, val_inputs, val_labels, train_inputs, train_label
         gen_loss, psnr = _validate(gen, val_loader, epoch, len(val_data), device, home_dir, feature_extractor)
         print(f"Validation: Gen Loss: {gen_loss:.3f}\tPSNR: {psnr:.3f}")
         
+        if epoch % 10 == 0:
+            end = time.time()
+            print(f"Finished epoch {epoch} in: {((end - start) / 60):.3f} minutes\nSaving model ...")
+            torch.save(gen.state_dict(), f"{home_dir}/pretrained/{model_name}{epoch}.pth")
+
     end = time.time()
     print(f"Finished training in: {((end - start) / 60):.3f} minutes\nSaving model ...")
 
-    model_name = input("Model name:")
-    torch.save(gen.state_dict(), f"{home_dir}/pretrained/{model_name}.pth")
+    torch.save(gen.state_dict(), f"{home_dir}/pretrained/{model_name}final.pth")
     return gen
 
 

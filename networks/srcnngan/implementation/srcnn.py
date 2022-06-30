@@ -45,6 +45,4 @@ class SRCNN(nn.Module):
         self.load_state_dict(pretrained_weights)
         self.eval()
         return self
-
-
-        
+       
