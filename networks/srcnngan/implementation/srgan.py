@@ -1,6 +1,6 @@
 import torch
 import torch.nn as nn
-from implementation.srcnngan_utils import zero_upsampling
+from .srcnngan_utils import zero_upsampling
 
 ### Classes ###
 class SRGAN(nn.Module):

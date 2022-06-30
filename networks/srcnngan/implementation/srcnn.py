@@ -1,6 +1,6 @@
 import torch
 import torch.nn as nn
-from implementation.srcnngan_utils import zero_upsampling
+from .srcnngan_utils import zero_upsampling
 
 ### Classes ###
 class SRCNN(nn.Module):
@@ -38,3 +38,5 @@ class SRCNN(nn.Module):
         model.load_state_dict(pretrained_weights)
         model.eval()
         return model
+
+        
