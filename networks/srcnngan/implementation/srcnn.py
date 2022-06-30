@@ -31,12 +31,20 @@ class SRCNN(nn.Module):
         
         return self.net(f(input))
     
-    def initiate(self, device, pretrained_weights):
-        """ Initializes the model using pretrained weights """
+    def initiate_data_parallel(self, device, pretrained_weights):
+        """ Initializes the model using data parallel pretrained weights """
         print("Initializing ...")
         model = nn.DataParallel(self).to(device)
         model.load_state_dict(pretrained_weights)
         model.eval()
         return model
+    
+    def initiate(self, device, pretrained_weights):
+        """ Initializes the model using pretrained weights """
+        print("Initializing ...")
+        self.load_state_dict(pretrained_weights)
+        self.eval()
+        return self
+
 
         
