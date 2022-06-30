@@ -6,7 +6,7 @@ from .srcnngan_utils import zero_upsampling
 class Discriminator(nn.Module):
     def __init__(self, input_shape = (3, 40, 40), c = 3, ndf = 64):
         """
-        AF(n, ndf) = a 3 layer discriminator for a super resolution network
+        AF(n, ndf) = a 24 layer discriminator for a super resolution network
 
         Representation Invaraint:
             - True
