@@ -15,7 +15,6 @@ class Discriminator(nn.Module):
             - Safe
         """
         super(Discriminator, self).__init__()
-        super(Discriminator, self).__init__()
         self.input_shape = input_shape
         _, h, w = self.input_shape
         self.output_shape = (1, h // 2 ** 4, w // 2 ** 4)
