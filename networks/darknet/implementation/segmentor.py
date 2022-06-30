@@ -67,10 +67,11 @@ class Segmentor():
         if len(indexes) > 0:
             for i in indexes.flatten():
                 x, y, w, h = boxes[i]
+                img_copy = np.empty_like(img)
                 label = str(self.classes[class_ids[i]])
                 confidence = str(round(confidences[i], 2))
-                cv2.rectangle(img, (x,y), (x + w, y + h), self.color, 3)
+                cv2.rectangle(img_copy, (x,y), (x + w, y + h), self.color, 3)
                 # cv2.putText(img, f"{label} {confidence}", (x, y + 20), self.font, 1, (255, 255, 255), 1)
-                self.roi.append([img[y: y + h, x: x + w], (x, y, w, h), label, confidence])
+                self.roi.append([img_copy[y: y + h, x: x + w], (x, y, w, h), label, confidence])
 
         self.fig_img = img
