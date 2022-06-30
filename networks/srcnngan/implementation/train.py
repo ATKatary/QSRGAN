@@ -123,8 +123,8 @@ def _train(models, dataloader, n, device, lr, feature_extractor, optimizer = Non
     for _, data in tqdm(enumerate(dataloader), total = int(n / batch_size)):
         # low_res = data[0].to(device)
         # label = data[1].to(device)
-        low_res = Variable(data[0]).to(device)
-        label = Variable(data[1]).to(device)
+        low_res = Variable(data[0] / 255).to(device)
+        label = Variable(data[1] / 255).to(device)
 
         # Training the generator
         gen_optimizer.zero_grad()
@@ -191,8 +191,8 @@ def _validate(model, dataloader, epoch, n, device, home_dir, feature_extractor, 
 
     with torch.no_grad():
         for _, data in tqdm(enumerate(dataloader), total = int(n / batch_size)):
-            image_data = data[0].to(device)
-            label = data[1].to(device)
+            image_data = (data[0] / 255).to(device)
+            label = (data[1] / 255).to(device)
             
             output = model(image_data)
             loss = criterion(output, label)
