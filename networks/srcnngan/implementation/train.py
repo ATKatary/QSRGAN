@@ -59,9 +59,9 @@ def train_and_validate(device, val_inputs, val_labels, train_inputs, train_label
         print(f"Epoch {epoch + 1} of {epochs}")
        
         gen_loss, disc_loss, psnr = _train((gen, disc), train_loader, len(train_data), device, lr, feature_extractor, (gen_optimizer, disc_optimizer))
-        gen_loss, psnr = _validate(gen, val_loader, epoch, len(val_data), device, home_dir, feature_extractor)
-
         print(f"Training: Gen Loss: {gen_loss:.3f}\tPSNR: {psnr:.3f}\tDisc Loss: {disc_loss:.3f}")
+        
+        gen_loss, psnr = _validate(gen, val_loader, epoch, len(val_data), device, home_dir, feature_extractor)
         print(f"Validation: Gen Loss: {gen_loss:.3f}\tPSNR: {psnr:.3f}")
         
     end = time.time()
