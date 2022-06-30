@@ -64,14 +64,17 @@ class Segmentor():
 
         indexes = cv2.dnn.NMSBoxes(boxes, confidences, 0.2, 0.4)
 
+        segmented_img = np.copy(img)
         if len(indexes) > 0:
             for i in indexes.flatten():
                 x, y, w, h = boxes[i]
-                img_copy = np.empty_like(img)
+                img_copy = np.copy(img)
                 label = str(self.classes[class_ids[i]])
                 confidence = str(round(confidences[i], 2))
                 cv2.rectangle(img_copy, (x,y), (x + w, y + h), self.color, 3)
+                cv2.rectangle(segmented_img, (x,y), (x + w, y + h), self.color, 3)
                 # cv2.putText(img, f"{label} {confidence}", (x, y + 20), self.font, 1, (255, 255, 255), 1)
                 self.roi.append([img_copy[y: y + h, x: x + w], (x, y, w, h), label, confidence])
 
-        self.fig_img = img
+        self.img = img
+        self.fig_img = segmented_img

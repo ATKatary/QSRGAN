@@ -3,7 +3,7 @@ import requests
 from .segmentor import Segmentor
 from .helpers import *
 
-def segment(weights_path, cfg_path, classes_path, img_path, home_dir):
+def segment(weights_path, cfg_path, classes_path, img_path, home_dir, store_dir):
     """
     Tests the segementation netowkr and displays the results
 
@@ -13,6 +13,7 @@ def segment(weights_path, cfg_path, classes_path, img_path, home_dir):
         :classes_path: <str> path to the file containing the names of classes of interest
         :img_path: <str> path to the image to segment
         :home_dir: <str> path to the directory containing the implementation
+        :store_dir: <str> path to where to store segemented images
     """
     network = Segmentor(weights_path, cfg_path, classes_path)
     if img_path is None:
@@ -21,13 +22,14 @@ def segment(weights_path, cfg_path, classes_path, img_path, home_dir):
 
     network.segment(img_path)
     
-    if network.fig_img is not None: display(network.fig_img)
+    if network.fig_img is not None and len(network.roi) > 0: display(network.fig_img)
 
     i = 0
     results = []
     for img, _, label, confidence in network.roi:
         print(f"Identified {label} with {float(confidence) * 100}% confidence") 
-        result_path = f"{home_dir}/output/result{i}.png"
+        result_path = f"{store_dir}/result{i}.png"
+        if img.shape[0] * img.shape[1] == 0: continue
         cv2.imwrite(result_path, img)
         results.append(result_path)
 
