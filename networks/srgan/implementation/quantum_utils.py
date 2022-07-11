@@ -38,7 +38,7 @@ def quanv(image):
         :returns: <np.ndarray> of the preproccesed image
     """
     h, w, c = image.shape
-    out = np.zeros((h, w, 4 * c))
+    out = np.zeros((h, w, 4))
 
     # Loop over the coordinates of the top-left pixel of 2X2 squares
     for j in range(0, h, 2):
