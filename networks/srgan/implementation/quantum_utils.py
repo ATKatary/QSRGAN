@@ -37,21 +37,22 @@ def quanv(image):
     Outputs
         :returns: <np.ndarray> of the preproccesed image
     """
-    out = np.zeros((14, 14, 4))
+    h, w, c = image.shape
+    out = np.zeros((h, w, 4 * c))
 
     # Loop over the coordinates of the top-left pixel of 2X2 squares
-    for j in range(0, 28, 2):
-        for k in range(0, 28, 2):
+    for j in range(0, h, 2):
+        for k in range(0, w, 2):
             # Process a squared 2x2 region of the image with a quantum circuit
             q_results = circuit(
                 [
-                    image[j, k, 0],
-                    image[j, k + 1, 0],
+                    image[j, k, :],
+                    image[j, k + 1, :],
                     image[j + 1, k, 0],
-                    image[j + 1, k + 1, 0]
+                    image[j + 1, k + 1, :]
                 ]
             )
             # Assign expectation values to different channels of the output pixel (j/2, k/2)
             for c in range(4):
-                out[j // 2, k // 2, c] = q_results[c]
+                out[j // 2, k // 2, :] = q_results[c]
     return out
