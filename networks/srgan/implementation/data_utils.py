@@ -90,8 +90,8 @@ def create_dataset(src_path, home_dir, stream = False, max_iters = None, k = 2, 
         # splitting frame into 100 tiles of size m x n
         n = 8
         # data += _split(image, n)
-        data += _split(high_res_image, n)
-        low_res_data += _split(low_res_image, n)
+        data += _split(new_shape, high_res_image, n)
+        low_res_data += _split(new_shape, low_res_image, n)
         # data.append(np.transpose(high_res_image, new_shape).astype(np.float32))
         # low_res_data.append(np.transpose(low_res_image, new_shape).astype(np.float32))
         i += 1
