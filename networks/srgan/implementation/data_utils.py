@@ -74,6 +74,7 @@ def create_dataset(src_path, home_dir, stream = False, max_iters = None, k = 2, 
     else: images = read_images(src_path)
 
     i = 0
+    new_shape = (2, 0, 1)
     for image_name, image in images.items():
         h, w, _ = image.shape 
         # low_res_image = cv2.resize(image, (w // k, h // k))
@@ -81,6 +82,7 @@ def create_dataset(src_path, home_dir, stream = False, max_iters = None, k = 2, 
         high_res_image = cv2.resize(image, (256, 256))
         
         if qauntum_preprocess: 
+            new_shape = (2, 0, 1, 3)
             if i % 100 == 0: print("Quantum Preprocessing ...")
             low_res_image = quanv(low_res_image)
             high_res_image = quanv(high_res_image)
@@ -90,8 +92,8 @@ def create_dataset(src_path, home_dir, stream = False, max_iters = None, k = 2, 
         # data += _split(image, n)
         data += _split(high_res_image, n)
         low_res_data += _split(low_res_image, n)
-        # data.append(np.transpose(high_res_image, (2, 0, 1)).astype(np.float32))
-        # low_res_data.append(np.transpose(low_res_image, (2, 0, 1)).astype(np.float32))
+        # data.append(np.transpose(high_res_image, new_shape).astype(np.float32))
+        # low_res_data.append(np.transpose(low_res_image, new_shape).astype(np.float32))
         i += 1
     
     hf.create_dataset(name="label", data=np.asarray(data))
@@ -173,11 +175,12 @@ def read_images(dir_path):
     return images
 
 ### Helper Functions ###
-def _split(image, k):
+def _split(new_shape, image, k):
     """
     Splits an image into h // k x w // k smaller images
 
     Inputs
+        :new_shape: <tuple> of int representing permutation of the dimensions
         :image: <np.ndarray> to be split
         :k: <int> the factor to split the image by 
     
@@ -186,4 +189,4 @@ def _split(image, k):
     """
     h, w, _ = image.shape
     m, n = h // k, w // k
-    return [np.transpose(image[x : x + m, y : y + n, ::], (2, 0, 1)).astype(np.float32) for x in range(0, h, m) for y in range(0, w, n)]
+    return [np.transpose(image[x : x + m, y : y + n, ::], new_shape).astype(np.float32) for x in range(0, h, m) for y in range(0, w, n)]

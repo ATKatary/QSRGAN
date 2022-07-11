@@ -54,5 +54,5 @@ def quanv(image):
             )
             # Assign expectation values to different channels of the output pixel (j/2, k/2)
             for i in range(c):
-                out[j // 2, k // 2, :] = q_results[i]
+                out[j // 2, k // 2, i] = q_results[i]
     return out
