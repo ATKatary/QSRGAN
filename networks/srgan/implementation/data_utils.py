@@ -44,7 +44,7 @@ class Dataset(Dataset):
         return DataLoader(self, batch_size=batch_size)
 
 ### Functions ###
-def create_dataset(src_path, home_dir, stream = False, max_iters = None, k = 2, qauntum_preprocess = False):
+def create_dataset(src_path, home_dir, stream = False, max_iters = None, k = 2, qauntum_preprocess = False, lazy = False):
     """
     Creates a dataset of images and labels from a source by downsampling the images in the source 
 
@@ -55,11 +55,14 @@ def create_dataset(src_path, home_dir, stream = False, max_iters = None, k = 2, 
         :max_iters: <int> number of images to use in dataset (None by default means use all available)
         :k: <int> factor to scale by
         :qauntum_preprocess: <boolean> indicating whether to preprocess the data using a quanvolution 
+        :lazy: <boolean> if True returns the file name without making changes
     
     Outpts
         :returns: path to the h5 file containing the generated dataset
     """
     hf_path = f"{home_dir}/data/train.h5"
+    if lazy: return hf_path
+
     try: os.remove(hf_path)
     except Exception: pass
 
@@ -70,13 +73,15 @@ def create_dataset(src_path, home_dir, stream = False, max_iters = None, k = 2, 
     if stream: images = extract_frames(src_path, max_iters=max_iters)
     else: images = read_images(src_path)
 
+    i = 0
     for image_name, image in images.items():
         h, w, _ = image.shape 
         # low_res_image = cv2.resize(image, (w // k, h // k))
-        low_res_image = cv2.resize(image, (320 // k, 320 // k))
-        high_res_image = cv2.resize(image, (320, 320))
+        low_res_image = cv2.resize(image, (256 // k, 256 // k))
+        high_res_image = cv2.resize(image, (256, 256))
         
         if qauntum_preprocess: 
+            if i % 100 == 0: print("Quantum Preprocessing ...")
             low_res_image = quanv(low_res_image)
             high_res_image = quanv(high_res_image)
 
@@ -87,6 +92,7 @@ def create_dataset(src_path, home_dir, stream = False, max_iters = None, k = 2, 
         low_res_data += _split(low_res_image, n)
         # data.append(np.transpose(high_res_image, (2, 0, 1)).astype(np.float32))
         # low_res_data.append(np.transpose(low_res_image, (2, 0, 1)).astype(np.float32))
+        i += 1
     
     hf.create_dataset(name="label", data=np.asarray(data))
     hf.create_dataset(name="data", data=np.asarray(low_res_data))
