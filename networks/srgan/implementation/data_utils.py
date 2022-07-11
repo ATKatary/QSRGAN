@@ -187,6 +187,6 @@ def _split(new_shape, image, k):
     Outputs
         :returns: a list of smaller images that together form the original image
     """
-    h, w, _ = image.shape
+    h, w, _ = image.shape[:3]
     m, n = h // k, w // k
     return [np.transpose(image[x : x + m, y : y + n, ::], new_shape).astype(np.float32) for x in range(0, h, m) for y in range(0, w, n)]
