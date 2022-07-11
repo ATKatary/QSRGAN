@@ -48,7 +48,7 @@ def quanv(image):
                 [
                     image[j, k, :],
                     image[j, k + 1, :],
-                    image[j + 1, k, 0],
+                    image[j + 1, k, :],
                     image[j + 1, k + 1, :]
                 ]
             )
