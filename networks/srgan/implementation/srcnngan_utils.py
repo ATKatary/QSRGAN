@@ -115,7 +115,7 @@ def random_init(m):
         torch.nn.init.normal_(m.weight.data, 1.0, 0.02)
         torch.nn.init.constant_(m.bias.data, 0)
 
-def display(image, permute = None, scale = 1):
+def display(image, permute = None, scale = 1, dtype = np.uint8):
     """
     Displays an image transposed as needed
 
@@ -123,8 +123,9 @@ def display(image, permute = None, scale = 1):
         :image: <np.ndarray> representing the image to be displayed
         :permute: <list> | None of how dimensions should be permuted, default is None
         :scale: <int> factor to scale pixels by, default is 1
+        :dtype: <np.???> type of the pixel values, default is np.uint8
     """
     if permute is not None:
-        image = (image.transpose(permute) * scale).astype(np.uint8)
+        image = (image.transpose(permute) * scale).astype(dtype)
     print(f"Image shape: {image.shape}")
     plt.imshow(image)
