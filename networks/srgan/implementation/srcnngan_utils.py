@@ -128,4 +128,6 @@ def display(image, permute = None, scale = 1, dtype = np.uint8):
     if permute is not None:
         image = (image.transpose(permute) * scale).astype(dtype)
     print(f"Image shape: {image.shape}")
-    plt.imshow(image)
+    plt.subplots(1, 1)
+    plt[0].imshow(image)
+    plt.show()
