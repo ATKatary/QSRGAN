@@ -44,7 +44,7 @@ class Dataset(Dataset):
         return DataLoader(self, batch_size=batch_size)
 
 ### Functions ###
-def create_dataset(src_path, home_dir, stream = False, max_iters = None, k = 2, qauntum_preprocess = False, lazy = False):
+def create_dataset(src_path, home_dir, stream = False, max_iters = None, k = 2, qauntum_preprocess = False, lazy = False, max_pics = None):
     """
     Creates a dataset of images and labels from a source by downsampling the images in the source 
 
@@ -94,6 +94,8 @@ def create_dataset(src_path, home_dir, stream = False, max_iters = None, k = 2, 
         low_res_data += _split(new_shape, low_res_image, n)
         # data.append(np.transpose(high_res_image, new_shape).astype(np.float32))
         # low_res_data.append(np.transpose(low_res_image, new_shape).astype(np.float32))
+        if max_pics is not None:
+            if max_pics < i: break
         i += 1
     
     hf.create_dataset(name="label", data=np.asarray(data))
