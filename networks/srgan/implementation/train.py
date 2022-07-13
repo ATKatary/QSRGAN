@@ -15,7 +15,7 @@ from torchvision.utils import make_grid
 from .discriminator import Discriminator
 
 ### Functions ###
-def train_and_validate(device, val_inputs, val_labels, train_inputs, train_labels, batch_size, epochs, lr, home_dir, beta1 = 0.5, gen_type = "SRGAN"):
+def train_and_validate(device, val_inputs, val_labels, train_inputs, train_labels, batch_size, epochs, lr, home_dir, input_shape, beta1 = 0.5, gen_type = "SRGAN"):
     """
     Tests out the network against an inout image
 
@@ -29,6 +29,7 @@ def train_and_validate(device, val_inputs, val_labels, train_inputs, train_label
         :epochs: <int> number of times to train the network
         :lr: <float> rate at which we update the network weights
         :home_dir: <str> the home directory containing subdirectories to read from and write to
+        :input_shape: <list> of ints representing the input shape of the images to the discriminator, i.e c x h x w where h, w = size of labels
     
     Outputs
         :returns: the traind SRCNN or SRGAN model
@@ -41,7 +42,7 @@ def train_and_validate(device, val_inputs, val_labels, train_inputs, train_label
     gen.apply(random_init)
     gen_optimizer = optim.Adam(gen.parameters(), lr=lr, betas=(beta1, 0.999))
 
-    disc = Discriminator().to(device)
+    disc = Discriminator(input_shape).to(device)
     disc.apply(random_init)
     disc_optimizer = optim.Adam(disc.parameters(), lr=lr, betas=(beta1, 0.999))
     
