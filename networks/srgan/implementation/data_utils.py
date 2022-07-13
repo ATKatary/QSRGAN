@@ -57,7 +57,7 @@ def create_dataset(src_path, home_dir, stream = False, max_iters = None, k = 2, 
         :qauntum_preprocess: <boolean> indicating whether to preprocess the data using a quanvolution 
         :lazy: <boolean> if True returns the file name without making changes
         :max_pics: <int> | None indicating maximum number of images the dataset should contain, default is None => include all
-        :split: <boolean> indicating whether to split each image into 64 smaller images
+        :split: <boolean> indicating whether to split each image into 64 smaller images, default is False
     
     Outpts
         :returns: path to the h5 file containing the generated dataset
@@ -98,7 +98,7 @@ def create_dataset(src_path, home_dir, stream = False, max_iters = None, k = 2, 
         else:
             data.append(np.transpose(high_res_image, new_shape).astype(np.float32))
             low_res_data.append(np.transpose(low_res_image, new_shape).astype(np.float32))
-            
+
         if max_pics is not None:
             if max_pics < i: break
         i += len(data)
