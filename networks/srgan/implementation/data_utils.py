@@ -79,15 +79,13 @@ def create_dataset(src_path, home_dir, stream = False, max_iters = None, k = 2, 
     new_shape = (2, 0, 1)
     for image_name, image in images.items():
         h, w, _ = image.shape 
-        # low_res_image = cv2.resize(image, (w // k, h // k))
-        low_res_image = cv2.resize(image, (256 // k, 256 // k))
-        high_res_image = cv2.resize(image, (256, 256))
-        
         if qauntum_preprocess: 
             new_shape = (2, 0, 1, 3)
             if i % 100 == 0: print("Quantum Preprocessing ...")
-            low_res_image = quanv(low_res_image)
-            high_res_image = quanv(high_res_image)
+            image = (quanv(image / 255) * 255).astype(np.uint8)
+        
+        low_res_image = cv2.resize(image, (256 // k, 256 // k))
+        high_res_image = cv2.resize(image, (256, 256))
 
         if split:
             # splitting frame into 64 tiles of size 256 / 8 x 256 / 8
@@ -96,11 +94,11 @@ def create_dataset(src_path, home_dir, stream = False, max_iters = None, k = 2, 
             data += _split(new_shape, high_res_image, n)
             low_res_data += _split(new_shape, low_res_image, n)
         else:
-            data.append(np.transpose(high_res_image, new_shape).astype(np.float32))
-            low_res_data.append(np.transpose(low_res_image, new_shape).astype(np.float32))
+            data.append(np.transpose(high_res_image, new_shape).astype(np.uint8))
+            low_res_data.append(np.transpose(low_res_image, new_shape).astype(np.uint8))
 
         if max_pics is not None:
-            if max_pics < i: break
+            if max_pics <= i: break
         i += len(data)
     
     hf.create_dataset(name="label", data=np.asarray(data))
@@ -177,7 +175,9 @@ def read_images(dir_path):
     images = {}
     for image_name in os.listdir(dir_path):
         image = cv2.imread(os.path.join(dir_path, image_name))
-        if image is not None: images[image_name] = image
+        if image is not None: 
+            image = cv2.cvtColor(image, cv2.COLOR_RGB2BGR)
+            images[image_name] = image
 
     return images
 
