@@ -44,7 +44,7 @@ class Dataset(Dataset):
         return DataLoader(self, batch_size=batch_size)
 
 ### Functions ###
-def create_dataset(src_path, home_dir, stream = False, max_iters = None, k = 2, qauntum_preprocess = False, lazy = False, max_pics = None, split = False):
+def create_dataset(src_path, home_dir, input_shape, stream = False, max_iters = None, k = 2, qauntum_preprocess = False, lazy = False, max_pics = None, split = False):
     """
     Creates a dataset of images and labels from a source by downsampling the images in the source 
 
@@ -52,6 +52,7 @@ def create_dataset(src_path, home_dir, stream = False, max_iters = None, k = 2, 
         :src_path: <str> of where the source file is, must be a video or a directory of images
         :home_dir: <str> the home directory containing subdirectories to read from and write to
         :stream: <boolean> True if the source is a video, False otherwise
+        :input_shape: <list> of ints indicating shape of labels, must be a multiple of (8, 8)
         :max_iters: <int> number of images to use in dataset (None by default means use all available)
         :k: <int> factor to scale by
         :qauntum_preprocess: <boolean> indicating whether to preprocess the data using a quanvolution 
@@ -78,18 +79,18 @@ def create_dataset(src_path, home_dir, stream = False, max_iters = None, k = 2, 
     i = 0
     new_shape = (2, 0, 1)
     for image_name, image in images.items():
-        h, w, _ = image.shape 
-        high_res_image = cv2.resize(image, (256, 256))
+        _, h, w = input_shape
+        high_res_image = cv2.resize(image, (h, w))
 
         if qauntum_preprocess: 
             new_shape = (2, 0, 1, 3)
             if i % 100 == 0: print("Quantum Preprocessing ...")
             high_res_image = (quanv(high_res_image / 255) * 255).astype(np.uint8)
         
-        low_res_image = cv2.resize(high_res_image, (256 // k, 256 // k))
+        low_res_image = cv2.resize(high_res_image, (h // k, w // k))
 
         if split:
-            # splitting frame into 64 tiles of size 256 / 8 x 256 / 8
+            # splitting frame into 64 tiles of size h / 8 x w / 8
             n = 8
             data += _split(new_shape, high_res_image, n)
             low_res_data += _split(new_shape, low_res_image, n)
