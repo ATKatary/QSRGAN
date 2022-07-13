@@ -96,7 +96,7 @@ def create_dataset(src_path, home_dir, stream = False, max_iters = None, k = 2, 
         # low_res_data.append(np.transpose(low_res_image, new_shape).astype(np.float32))
         if max_pics is not None:
             if max_pics < i: break
-        i += 1
+        i += len(data)
     
     hf.create_dataset(name="label", data=np.asarray(data))
     hf.create_dataset(name="data", data=np.asarray(low_res_data))
