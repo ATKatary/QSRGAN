@@ -79,18 +79,18 @@ def create_dataset(src_path, home_dir, stream = False, max_iters = None, k = 2, 
     new_shape = (2, 0, 1)
     for image_name, image in images.items():
         h, w, _ = image.shape 
+        high_res_image = cv2.resize(image, (256, 256))
+
         if qauntum_preprocess: 
             new_shape = (2, 0, 1, 3)
             if i % 100 == 0: print("Quantum Preprocessing ...")
-            image = (quanv(image / 255) * 255).astype(np.uint8)
+            high_res_image = (quanv(high_res_image / 255) * 255).astype(np.uint8)
         
-        low_res_image = cv2.resize(image, (256 // k, 256 // k))
-        high_res_image = cv2.resize(image, (256, 256))
+        low_res_image = cv2.resize(high_res_image, (256 // k, 256 // k))
 
         if split:
             # splitting frame into 64 tiles of size 256 / 8 x 256 / 8
             n = 8
-            # data += _split(image, n)
             data += _split(new_shape, high_res_image, n)
             low_res_data += _split(new_shape, low_res_image, n)
         else:
