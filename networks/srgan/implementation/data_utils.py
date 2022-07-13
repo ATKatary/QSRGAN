@@ -44,7 +44,7 @@ class Dataset(Dataset):
         return DataLoader(self, batch_size=batch_size)
 
 ### Functions ###
-def create_dataset(src_path, home_dir, stream = False, max_iters = None, k = 2, qauntum_preprocess = False, lazy = False, max_pics = None):
+def create_dataset(src_path, home_dir, stream = False, max_iters = None, k = 2, qauntum_preprocess = False, lazy = False, max_pics = None, split = False):
     """
     Creates a dataset of images and labels from a source by downsampling the images in the source 
 
@@ -56,6 +56,8 @@ def create_dataset(src_path, home_dir, stream = False, max_iters = None, k = 2, 
         :k: <int> factor to scale by
         :qauntum_preprocess: <boolean> indicating whether to preprocess the data using a quanvolution 
         :lazy: <boolean> if True returns the file name without making changes
+        :max_pics: <int> | None indicating maximum number of images the dataset should contain, default is None => include all
+        :split: <boolean> indicating whether to split each image into 64 smaller images
     
     Outpts
         :returns: path to the h5 file containing the generated dataset
@@ -87,13 +89,16 @@ def create_dataset(src_path, home_dir, stream = False, max_iters = None, k = 2, 
             low_res_image = quanv(low_res_image)
             high_res_image = quanv(high_res_image)
 
-        # splitting frame into 100 tiles of size m x n
-        n = 8
-        # data += _split(image, n)
-        data += _split(new_shape, high_res_image, n)
-        low_res_data += _split(new_shape, low_res_image, n)
-        # data.append(np.transpose(high_res_image, new_shape).astype(np.float32))
-        # low_res_data.append(np.transpose(low_res_image, new_shape).astype(np.float32))
+        if split:
+            # splitting frame into 64 tiles of size 256 / 8 x 256 / 8
+            n = 8
+            # data += _split(image, n)
+            data += _split(new_shape, high_res_image, n)
+            low_res_data += _split(new_shape, low_res_image, n)
+        else:
+            data.append(np.transpose(high_res_image, new_shape).astype(np.float32))
+            low_res_data.append(np.transpose(low_res_image, new_shape).astype(np.float32))
+            
         if max_pics is not None:
             if max_pics < i: break
         i += len(data)
