@@ -100,7 +100,7 @@ def create_dataset(src_path, home_dir, input_shape, stream = False, max_iters = 
 
         if max_pics is not None:
             if max_pics <= i: break
-        i += len(data)
+        i = len(data)
     
     hf.create_dataset(name="label", data=np.asarray(data))
     hf.create_dataset(name="data", data=np.asarray(low_res_data))
