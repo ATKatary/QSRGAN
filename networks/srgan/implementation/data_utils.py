@@ -83,9 +83,9 @@ def create_dataset(src_path, home_dir, input_shape, stream = False, max_iters = 
         high_res_image = cv2.resize(image, (h, w))
 
         if qauntum_preprocess: 
-            new_shape = (2, 0, 1, 3)
+            # new_shape = (2, 0, 1, 3)
             if i % 100 == 0: print("Quantum Preprocessing ...")
-            low_res_image = (quanv(high_res_image / 255) * 255).astype(np.uint8)
+            low_res_image = (quanv(high_res_image / 255) * 255).astype(np.uint8)[:, :, :, 1]
 
         else: low_res_image = cv2.resize(image, (h // k, w // k))
 
