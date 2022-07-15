@@ -9,7 +9,7 @@ def get_data(data_dir):
     Inputs
         :data_dir: <str> path to the directory containing the data
     """
-    data = {data_type: glob.glob(f"{data_dir}/{data_type}/*.jpg") for data_type in ['train', 'test', 'valid']}
+    data = {data_type: glob.glob(f"{data_dir}{data_type}/*.jpg") for data_type in ['train', 'test', 'valid']}
     for data_type, data in data.items():
         with open(f"data/{data_type}.txt", 'w') as f:
             f.write('\n'.join(data))
