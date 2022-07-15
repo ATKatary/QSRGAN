@@ -43,7 +43,7 @@ def adjust_train_cfg(darknet_path, classes):
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
 
-    parser.add_argument('--classes', type=list, default=['license-plate', 'car'])
+    parser.add_argument('--classes', type=list, default=['driver'])
     parser.add_argument('--data_dir', type=str, default='.')
     parser.add_argument('--darknet_path', type=str, default='/content/darkent')
 
