@@ -177,7 +177,7 @@ def read_images(dir_path):
     for image_name in os.listdir(dir_path):
         image = cv2.imread(os.path.join(dir_path, image_name))
         if image is not None: 
-            image = cv2.cvtColor(image, cv2.COLOR_RGB2BGR)
+            image = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
             images[image_name] = image
 
     return images
