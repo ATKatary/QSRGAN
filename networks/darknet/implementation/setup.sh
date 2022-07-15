@@ -15,6 +15,7 @@ touch data/obj.data
 echo 'driver' > data/obj.names
 # echo 'license-plate' > data/obj.names
 # echo 'car' >> data/obj.names
+
 echo -e 'classes = 1\ntrain = data/train.txt\nvalid = data/test.txt\nnames = data/obj.names\nbackup = /content/implementation/pretrained/weights' > data/obj.data
 
 mkdir data/train

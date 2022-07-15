@@ -27,22 +27,24 @@ def circuit(phi):
     return [qml.expval(qml.PauliZ(j)) for j in range(4)]
 
 
-def quanv(image):
+def quanv(image, k):
     """
     Convolves the input image with many applications of the same quantum circuit.
+    Downsamples the image by factor of k
 
     Inputs
         :image: <np.ndarray> representing the image
+        :k: <int> scalling factor
     
     Outputs
         :returns: <np.ndarray> of the preproccesed image
     """
     h, w, c = image.shape
-    out = np.zeros((h // 2, w // 2, c, 4))
+    out = np.zeros((h // k, w // k, c, 4))
 
     # Loop over the coordinates of the top-left pixel of 2X2 squares
-    for j in range(0, h, 2):
-        for k in range(0, w, 2):
+    for j in range(0, h, k):
+        for k in range(0, w, k):
             # Process a squared 2x2 region of the image with a quantum circuit
             q_results = circuit(
                 [
