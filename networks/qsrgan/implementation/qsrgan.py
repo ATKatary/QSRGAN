@@ -4,6 +4,7 @@ import pennylane as qml
 from pennylane import numpy as np
 
 ### Global Constants ###
+n_qubits = 5
 dev = qml.device("lightning.qubit", wires=n_qubits) # Quantum simulator
 device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
 
