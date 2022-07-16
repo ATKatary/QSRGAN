@@ -4,18 +4,13 @@ import pennylane as qml
 from pennylane import numpy as np
 
 ### Global Constants ###
-q_depth = 6             # Depth of the parameterised quantum circuit / D
-n_qubits = 5            # Total number of qubits / N
-n_a_qubits = 1          # Number of ancillary qubits / N_A
-
-
 dev = qml.device("lightning.qubit", wires=n_qubits) # Quantum simulator
 device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
 
 class QSRGAN(nn.Module):
     """Quantum generator class for the patch method"""
 
-    def __init__(self, n_generators = 4, k = 2, q_delta=1):
+    def __init__(self, n_generators = 4, k = 2, q_delta = 1):
         """
         Args:
             n_generators (int): Number of sub-generators to be used in the patch method.
@@ -23,11 +18,14 @@ class QSRGAN(nn.Module):
         """
 
         super().__init__()
+        self.q_depth = 6             # Depth of the parameterised quantum circuit / D
+        self.n_qubits = 5            # Total number of qubits / N
+        self.n_a_qubits = 1          # Number of ancillary qubits / N_A
         self.scale_factor = k
 
         self.q_params = nn.ParameterList(
             [
-                nn.Parameter(q_delta * torch.rand(q_depth * n_qubits), requires_grad=True)
+                nn.Parameter(q_delta * torch.rand(self.q_depth * self.n_qubits), requires_grad=True)
                 for _ in range(n_generators)
             ]
         )
@@ -37,25 +35,11 @@ class QSRGAN(nn.Module):
         f = nn.Upsample(scale_factor=self.scale_factor, mode=mode)
         input = f(input)
 
-        # Size of each sub-generator output
-        patch_size = 2 ** (n_qubits - n_a_qubits)
-
-        # Create a Tensor to 'catch' a batch of images from the for loop. input.size(0) is the batch size.
-        images = torch.Tensor(input.size(0), 0).to(device)
-
         # Iterate over all sub-generators
         for params in self.q_params:
+            input = partial_measure(input, 1, params, self.n_qubits).float().unsqueeze(0)
 
-            # Create a Tensor to 'catch' a batch of the patches from a single sub-generator
-            patches = torch.Tensor(0, patch_size).to(device)
-            for elem in input:
-                q_out = partial_measure(elem, params).float().unsqueeze(0)
-                patches = torch.cat((patches, q_out))
-
-            # Each batch of patches is concatenated with each other to create a batch of images
-            images = torch.cat((images, patches), 1)
-
-        return images
+        return input
     
     def initiate(self, device, pretrained_weights):
         """ Initializes the model using pretrained weights """
@@ -65,7 +49,7 @@ class QSRGAN(nn.Module):
         return self
 
 @qml.qnode(dev, interface="torch", diff_method="parameter-shift")
-def quantum_circuit(noise, weights):
+def quantum_circuit(noise, weights, n_qubits, q_depth):
     """
     """
     weights = weights.reshape(q_depth, n_qubits)
@@ -86,12 +70,44 @@ def quantum_circuit(noise, weights):
 
     return qml.probs(wires=list(range(n_qubits)))
 
-def partial_measure(noise, weights):
+def partial_measure(input, n, weights, n_qubits, q_depth, n_a_qubits):
     # Non-linear Transform
-    probs = quantum_circuit(noise, weights)
+    probs = quanv(input, n, weights, n_qubits, q_depth)
     probsgiven0 = probs[: (2 ** (n_qubits - n_a_qubits))]
     probsgiven0 /= torch.sum(probs)
 
     # Post-Processing
     probsgiven = probsgiven0 / torch.max(probsgiven0)
     return probsgiven
+
+def quanv(image, n, weights, n_qubits, q_depth):
+    """
+    Convolves the input image with many applications of the same quantum circuit.
+    Downsamples the image by factor of k
+
+    Inputs
+        :image: <np.ndarray> representing the image of size h x w x c
+        :n: <int> size of the kernel
+    
+    Outputs
+        :returns: <np.ndarray> of the preproccesed image of size h / n x h / w x c x 4
+    """
+    h, w, c = image.shape
+    out = np.zeros((h // n, w // n, c, n_qubits))
+
+    # Loop over the coordinates of the top-left pixel of 2X2 squares
+    for i in range(0, h, n):
+        for j in range(0, w, n):
+            # Process a squared 2x2 region of the image with a quantum circuit
+            q_results = quantum_circuit(
+                [
+                    image[i, j, :],
+                    image[i, j + 1, :],
+                    image[i + 1, j, :],
+                    image[i + 1, j + 1, :]
+                ], weights, n_qubits, q_depth
+            )
+            # Assign expectation values to different channels of the output pixel (j/2, k/2)
+            for k in range(c):
+                out[i // 2, j // 2, k] = q_results[k]
+    return out

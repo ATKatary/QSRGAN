@@ -33,11 +33,11 @@ def quanv(image, n):
     Downsamples the image by factor of k
 
     Inputs
-        :image: <np.ndarray> representing the image
-        :n: <int> scalling factor
+        :image: <np.ndarray> representing the image of size h x w x c
+        :n: <int> size of the kernel
     
     Outputs
-        :returns: <np.ndarray> of the preproccesed image
+        :returns: <np.ndarray> of the preproccesed image of size h / n x h / w x c x 4
     """
     h, w, c = image.shape
     out = np.zeros((h // n, w // n, c, 4))
