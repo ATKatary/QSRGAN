@@ -36,6 +36,8 @@ class QSRGAN(nn.Module):
     def forward(self, input, mode = 'bilinear'):
         f = nn.Upsample(scale_factor=self.scale_factor, mode=mode)
         input = f(input)
+        _, h, w = input.shape
+        input = input.reshape(-1, h * w)
 
         # Size of each sub-generator output
         patch_size = 2 ** (n_qubits - n_a_qubits)
