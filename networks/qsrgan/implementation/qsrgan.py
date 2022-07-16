@@ -73,7 +73,7 @@ def quantum_circuit(noise, weights, n_qubits, q_depth):
 
 def partial_measure(input, n, weights, n_qubits, q_depth, n_a_qubits):
     # Non-linear Transform
-    probs = quanv(input, n, weights, n_qubits, q_depth)
+    probs = quanv_layer(input, n, weights, n_qubits, q_depth)
     probsgiven0 = probs[: (2 ** (n_qubits - n_a_qubits))]
     probsgiven0 /= torch.sum(probs)
 
@@ -81,7 +81,7 @@ def partial_measure(input, n, weights, n_qubits, q_depth, n_a_qubits):
     probsgiven = probsgiven0 / torch.max(probsgiven0)
     return probsgiven
 
-def quanv(image, n, weights, n_qubits, q_depth):
+def quanv_layer(image, n, weights, n_qubits, q_depth):
     """
     Convolves the input image with many applications of the same quantum circuit.
     Downsamples the image by factor of k
