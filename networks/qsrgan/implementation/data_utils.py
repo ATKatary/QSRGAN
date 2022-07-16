@@ -64,7 +64,7 @@ def create_dataset(src_path, home_dir, input_shape, stream = False, max_iters = 
         :returns: path to the h5 file containing the generated dataset
     """
     hf_path = f"{home_dir}/data/train.h5"
-    if lazy: return hf_path
+    if lazy and os.path.exists(hf_path): return hf_path
 
     try: os.remove(hf_path)
     except Exception: pass
