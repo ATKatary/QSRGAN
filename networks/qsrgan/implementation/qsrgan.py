@@ -23,7 +23,7 @@ class QSRGAN(nn.Module):
         """
 
         super().__init__()
-        scale_factor = k
+        self.scale_factor = k
 
         self.q_params = nn.ParameterList(
             [
@@ -34,7 +34,7 @@ class QSRGAN(nn.Module):
         self.n_generators = n_generators
 
     def forward(self, input, mode = 'bilinear'):
-        if f is None: f = nn.Upsample(scale_factor=self.scale_factor, mode=mode)
+        f = nn.Upsample(scale_factor=self.scale_factor, mode=mode)
         input = f(input)
 
         # Size of each sub-generator output
