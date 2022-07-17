@@ -36,9 +36,9 @@ class QSRGAN(nn.Module):
         f = nn.Upsample(scale_factor=self.scale_factor, mode=mode)
         input = f(input)
 
-        input = self._quanv_layer(input, 2, 1, self.conv1_weights, self.n_qubits, self.n_a_qubits)
+        output = self._quanv_layer(input, 2, 1, self.conv1_weights, self.n_qubits, self.n_a_qubits)
 
-        return input
+        return output.to(device)
     
     def initiate(self, device, pretrained_weights):
         """ Initializes the model using pretrained weights """
