@@ -33,7 +33,7 @@ def train_and_validate(device, val_inputs, val_labels, train_inputs, train_label
     Outputs
         :returns: the traind SRCNN or SRGAN model
     """
-    model_name = input("Model name:")
+    model_name = input("Model name: ")
     k = None
     while k is None:
         try: k = int(input("Enter integer upscaling factor: "))

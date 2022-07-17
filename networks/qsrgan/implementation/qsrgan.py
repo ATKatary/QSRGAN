@@ -131,5 +131,15 @@ class QSRGAN(nn.Module):
         Output
             :returns: k x k submatrix of A starting at A[i][j] in top left corner
         """
-        return [A[i + x, j + y, :] for x in range(k) for y in range(k)]
+        A_k = []
+        n, m = A.shape[:2]
+        for x in range(k):
+            x += i
+            if x >= n: x = n - 1
+            for y in range(k):
+                y += j
+                if y >= m: x = m - 1
+                A_k.append(A[x, y, :])
+
+        return A_k
 
