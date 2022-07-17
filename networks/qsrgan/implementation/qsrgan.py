@@ -64,10 +64,9 @@ class QSRGAN(nn.Module):
             :returns: <np.ndarray> of the preproccesed image of size h / n x h / w x c x 4
         """
         print("\nQuanvolving ...")
-        
-        b = images.shape[0]
-        result = torch.empty((b))
-        for b_i in range(b):
+
+        result = torch.empty(images.shape)
+        for b_i in range(len(images)):
             image = images[b_i]
             c, h, w = image.shape
             out = torch.Tensor(np.zeros((h // stride, w // stride, c)))
