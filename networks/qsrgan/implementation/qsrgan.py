@@ -106,7 +106,7 @@ class QSRGAN(nn.Module):
 
             for i in range(0, h, stride):
                 for j in range(0, w, stride):
-                    q_results = self._quantum_circuit(self._identity(image, i, j, kernel_size), weights, n_qubits)
+                    q_results = self._quantum_circuit(self._identity(image.transpose(1, 2, 0), i, j, kernel_size), weights, n_qubits)
 
                     for k in range(c): 
                         probs_given0 = q_results[k][:2 ** (n_qubits - n_a_qubits)]
@@ -138,7 +138,7 @@ class QSRGAN(nn.Module):
             if x >= n: x = n - 1
             for y in range(k):
                 y += j
-                if y >= m: x = m - 1
+                if y >= m: y = m - 1
                 A_k.append(A[x, y, :])
 
         return A_k
