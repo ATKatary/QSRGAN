@@ -47,41 +47,6 @@ class QSRGAN(nn.Module):
         self.eval()
         return self
 
-    @qml.qnode(dev, interface = "torch", diff_method = "parameter-shift")
-    def _quantum_circuit(self, input, weights, n_qubits):
-        """
-        A basic quantum circuit of 4 qubits
-        q1 - Ry -- Ry -- . ------------ prob1
-        q2 - Ry -- Ry -- Z -- . ------- prob2
-        q3 - Ry -- Ry ------- Z -- . -- prob3
-        q4 - Ry -- Ry ------------ Z -- prob1
-
-        Inputs
-            :input: <list> of values of the four qubits to be passed through the circuit 
-            :weights: <torch.Tensor> of trainable weights
-            :n_qubits: <int> number of qubits the circuit takes in 
-        
-        Outputs
-            :returns: <torch.Tensor> of the qubit probabilities
-        """
-        c, q = weights.shape
-
-        # Initialise latent vectors
-        for i in range(n_qubits):
-            qml.RY(input[i], wires=i)
-
-        # Repeated layer
-        for i in range(c):
-            # Parameterised layer
-            for y in range(q):
-                qml.RY(weights[i][y], wires=y)
-
-            # Control Z gates
-            for y in range(n_qubits - 1):
-                qml.CZ(wires=[y, y + 1])
-
-        return qml.probs(wires=list(range(n_qubits)))
-
     def _quanv_layer(self, images, kernel_size, stride, weights, n_qubits, n_a_qubits = 0):
         """
         Convolves the input image with many applications of the same quantum circuit.
@@ -99,21 +64,21 @@ class QSRGAN(nn.Module):
             :returns: <np.ndarray> of the preproccesed image of size h / n x h / w x c x 4
         """
         result = []
-
+        print("Quanvolving ...")
         for image in images:
             c, h, w = image.shape
             out = torch.Tensor(np.zeros((h // stride, w // stride, c)))
 
             for i in range(0, h, stride):
                 for j in range(0, w, stride):
-                    q_results = self._quantum_circuit(self._identity(image.transpose(1, 2, 0), i, j, kernel_size), weights, n_qubits)
+                    q_results = quantum_circuit(self._identity(image.permute(1, 2, 0), i, j, kernel_size), weights, n_qubits)
 
                     for k in range(c): 
                         probs_given0 = q_results[k][:2 ** (n_qubits - n_a_qubits)]
                         probs_given0 /= torch.sum(probs_given0) 
                         
                         out[i // stride, j // stride, k] = torch.max(probs_given0)
-
+            
             result.append(out.transpose(2, 0, 1))
 
         return torch.Tensor(np.array(result))
@@ -142,4 +107,39 @@ class QSRGAN(nn.Module):
                 A_k.append(A[x, y, :])
 
         return A_k
+
+@qml.qnode(dev, interface = "torch", diff_method = "parameter-shift")
+def quantum_circuit(input, weights, n_qubits):
+    """
+    A basic quantum circuit of 4 qubits
+    q1 - Ry -- Ry -- . ------------ prob1
+    q2 - Ry -- Ry -- Z -- . ------- prob2
+    q3 - Ry -- Ry ------- Z -- . -- prob3
+    q4 - Ry -- Ry ------------ Z -- prob1
+
+    Inputs
+        :input: <list> of values of the four qubits to be passed through the circuit 
+        :weights: <torch.Tensor> of trainable weights
+        :n_qubits: <int> number of qubits the circuit takes in 
+    
+    Outputs
+        :returns: <torch.Tensor> of the qubit probabilities
+    """
+    c, q = weights.shape
+
+    # Initialise latent vectors
+    for i in range(n_qubits):
+        qml.RY(input[i], wires=i)
+
+    # Repeated layer
+    for i in range(c):
+        # Parameterised layer
+        for y in range(q):
+            qml.RY(weights[i][y], wires=y)
+
+        # Control Z gates
+        for y in range(n_qubits - 1):
+            qml.CZ(wires=[y, y + 1])
+
+    return qml.probs(wires=list(range(n_qubits)))
 
