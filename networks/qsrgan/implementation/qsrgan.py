@@ -11,34 +11,32 @@ device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
 class QSRGAN(nn.Module):
     """Quantum generator class for the patch method"""
 
-    def __init__(self, n_generators = 4, k = 2, q_delta = 1):
+    def __init__(self, in_c = 3, k = 2, n_qubits = 4, n_a_qubits = 0):
         """
-        Args:
-            n_generators (int): Number of sub-generators to be used in the patch method.
-            q_delta (float, optional): Spread of the random distribution for parameter initialisation.
+        AF(in_c, k, n_qubits, n_a_qubits) = a single layer network (a single ciruit network) with n_qubits, upscaling the image by a factor of k
+                                            with n_a_qubits acting as ancillary qubits (supporting)
+
+        Representation Invariant
+            - true
+            - inherits from nn.Module
+
+        Representation Exposure
+            - safe
+            - inherts from nn.Module
         """
 
         super().__init__()
-        self.q_depth = 6             # Depth of the parameterised quantum circuit / D
-        self.n_qubits = 5            # Total number of qubits / N
-        self.n_a_qubits = 1          # Number of ancillary qubits / N_A
-        self.scale_factor = k
+        self.scale_factor = k               # upscaling factor
+        self.n_qubits = n_qubits            # total number of qubits / N (must be a perfect square number)
+        self.n_a_qubits = n_a_qubits        # number of ancillary qubits / N_A (aka support qubits)
 
-        self.q_params = nn.ParameterList(
-            [
-                nn.Parameter(q_delta * torch.rand(self.q_depth * self.n_qubits), requires_grad=True)
-                for _ in range(n_generators)
-            ]
-        )
-        self.n_generators = n_generators
+        self.conv1_weights = nn.Parameter(torch.rand((in_c, self.n_qubits)), requires_grad=True)
 
     def forward(self, input, mode = 'bilinear'):
         f = nn.Upsample(scale_factor=self.scale_factor, mode=mode)
         input = f(input)
 
-        # Iterate over all sub-generators
-        for params in self.q_params:
-            input = partial_measure(input, 1, params, self.n_qubits).float().unsqueeze(0)
+        input = self._quanv_layer(input, 2, 1, self.conv1_weights, self.n_qubits, self.n_a_qubits)
 
         return input
     
@@ -49,66 +47,89 @@ class QSRGAN(nn.Module):
         self.eval()
         return self
 
-@qml.qnode(dev, interface="torch", diff_method="parameter-shift")
-def quantum_circuit(noise, weights, n_qubits, q_depth):
-    """
-    """
-    weights = weights.reshape(q_depth, n_qubits)
+    @qml.qnode(dev, interface = "torch", diff_method = "parameter-shift")
+    def _quantum_circuit(self, input, weights, n_qubits):
+        """
+        A basic quantum circuit of 4 qubits
+        q1 - Ry -- Ry -- . ------------ prob1
+        q2 - Ry -- Ry -- Z -- . ------- prob2
+        q3 - Ry -- Ry ------- Z -- . -- prob3
+        q4 - Ry -- Ry ------------ Z -- prob1
 
-    # Initialise latent vectors
-    for i in range(n_qubits):
-        qml.RY(noise[i], wires=i)
+        Inputs
+            :input: <list> of values of the four qubits to be passed through the circuit 
+            :weights: <torch.Tensor> of trainable weights
+            :n_qubits: <int> number of qubits the circuit takes in 
+        
+        Outputs
+            :returns: <torch.Tensor> of the qubit probabilities
+        """
+        c, q = weights.shape
 
-    # Repeated layer
-    for i in range(q_depth):
-        # Parameterised layer
-        for y in range(n_qubits):
-            qml.RY(weights[i][y], wires=y)
+        # Initialise latent vectors
+        for i in range(n_qubits):
+            qml.RY(input[i], wires=i)
 
-        # Control Z gates
-        for y in range(n_qubits - 1):
-            qml.CZ(wires=[y, y + 1])
+        # Repeated layer
+        for i in range(c):
+            # Parameterised layer
+            for y in range(q):
+                qml.RY(weights[i][y], wires=y)
 
-    return qml.probs(wires=list(range(n_qubits)))
+            # Control Z gates
+            for y in range(n_qubits - 1):
+                qml.CZ(wires=[y, y + 1])
 
-def partial_measure(input, n, weights, n_qubits, q_depth, n_a_qubits):
-    # Non-linear Transform
-    probs = quanv_layer(input, n, weights, n_qubits, q_depth)
-    probsgiven0 = probs[: (2 ** (n_qubits - n_a_qubits))]
-    probsgiven0 /= torch.sum(probs)
+        return qml.probs(wires=list(range(n_qubits)))
 
-    # Post-Processing
-    probsgiven = probsgiven0 / torch.max(probsgiven0)
-    return probsgiven
+    def _quanv_layer(self, images, kernel_size, stride, weights, n_qubits, n_a_qubits = 0):
+        """
+        Convolves the input image with many applications of the same quantum circuit.
+        Downsamples the image by factor of k
 
-def quanv_layer(image, n, weights, n_qubits, q_depth):
-    """
-    Convolves the input image with many applications of the same quantum circuit.
-    Downsamples the image by factor of k
+        Inputs
+            :images: <np.ndarray> representing the image of size b x c x h x w
+            :kernel_size: <int> size of the kernel
+            :stride: <int> size of the stride
+            :weights: <torch.Tensor> representing the kernel 
+            :n_qubits: <int> number of qubits
+            :n_a_qubits: <int> 
+        
+        Outputs
+            :returns: <np.ndarray> of the preproccesed image of size h / n x h / w x c x 4
+        """
+        result = []
 
-    Inputs
-        :image: <np.ndarray> representing the image of size h x w x c
-        :n: <int> size of the kernel
-    
-    Outputs
-        :returns: <np.ndarray> of the preproccesed image of size h / n x h / w x c x 4
-    """
-    h, w, c = image.shape
-    out = np.zeros((h // n, w // n, c, n_qubits))
+        for image in images:
+            c, h, w = image.shape
+            out = torch.Tensor(np.zeros((h // stride, w // stride, c)))
 
-    # Loop over the coordinates of the top-left pixel of 2X2 squares
-    for i in range(0, h, n):
-        for j in range(0, w, n):
-            # Process a squared 2x2 region of the image with a quantum circuit
-            q_results = quantum_circuit(
-                [
-                    image[i, j, :],
-                    image[i, j + 1, :],
-                    image[i + 1, j, :],
-                    image[i + 1, j + 1, :]
-                ], weights, n_qubits, q_depth
-            )
-            # Assign expectation values to different channels of the output pixel (j/2, k/2)
-            for k in range(c):
-                out[i // 2, j // 2, k] = q_results[k]
-    return out
+            for i in range(0, h, stride):
+                for j in range(0, w, stride):
+                    q_results = self._quantum_circuit(self._identity(image, i, j, kernel_size), weights, n_qubits)
+
+                    for k in range(c): 
+                        probs_given0 = q_results[k][:2 ** (n_qubits - n_a_qubits)]
+                        probs_given0 /= torch.sum(probs_given0) 
+                        
+                        out[i // stride, j // stride, k] = torch.max(probs_given0)
+
+            result.append(out.transpose(2, 0, 1))
+
+        return torch.Tensor(np.array(result))
+
+    def _identity(self, A, i, j, k):
+        """
+        Returns the matrix multiplication of I_k x A[i : i + k][j : j + k][::] where I_k is the k x k identity matrix
+
+        Inputs
+            :A: <np.ndarray | torch.Tensor> representing the matrix
+            :i: <int> of dim 1 coordinate
+            :j: <int> of dim 2 coordinate
+            :k: <int> indentiy matrix size
+        
+        Output
+            :returns: k x k submatrix of A starting at A[i][j] in top left corner
+        """
+        return [A[i + x, j + y, :] for x in range(k) for y in range(k)]
+
