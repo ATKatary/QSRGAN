@@ -79,7 +79,7 @@ class QSRGAN(nn.Module):
                         probs_given0 = q_results[k][:2 ** (n_qubits - n_a_qubits)]
                         probs_given0 /= torch.sum(probs_given0) 
                         
-                        out[i // stride, j // stride, k] = torch.max(probs_given0)
+                        out[i // stride, j // stride, k] = float(max(probs_given0))
             
             result[b_i] = out.permute(2, 0, 1)
 
